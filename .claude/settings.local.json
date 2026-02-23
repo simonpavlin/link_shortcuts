@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install react-router-dom @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities uuid 2>&1)",
+      "Bash(npm run build 2>&1)"
+    ]
+  }
+}

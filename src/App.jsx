@@ -1,9 +1,14 @@
-function App() {
-  return (
-    <div className="container">
-      <h1>hi, I'm Linker</h1>
-    </div>
-  )
-}
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { Layout } from './components/shared/Layout'
+import { ShortcutsPage } from './components/shortcuts/ShortcutsPage'
 
-export default App
+export const App = () => (
+  <BrowserRouter>
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Navigate to="/shortcuts/" replace />} />
+        <Route path="/shortcuts/*" element={<ShortcutsPage />} />
+      </Routes>
+    </Layout>
+  </BrowserRouter>
+)
