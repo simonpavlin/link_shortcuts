@@ -115,7 +115,13 @@ export default function App() {
             : { ...w, x: w.x + w.vx * dt, y: w.y + w.vy * dt, angle: w.angle + w.rotSpeed * dt }
         )
         .filter(w => !(w.dying && w.opacity <= 0))
-        .filter(w => w.x > -450 && w.x < window.innerWidth + 450 && w.y < window.innerHeight + 120)
+        .filter(w => {
+          const escaped = w.x <= -450 || w.x >= window.innerWidth + 450 || w.y >= window.innerHeight + 120
+          if (escaped && !w.dying) {
+            g.score = Math.max(0, g.score - 3)
+          }
+          return !escaped
+        })
 
       g.particles = g.particles
         .map(p => ({
