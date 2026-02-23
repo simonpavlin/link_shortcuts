@@ -1,7 +1,7 @@
 function App() {
   return (
     <div className="container">
-      <h1>link_shortcuts</h1>
+      <h1>hi, I'm Linker</h1>
     </div>
   )
 }
