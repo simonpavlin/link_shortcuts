@@ -1,12 +1,12 @@
-name: Deploy (main)
+name: Deploy (master)
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   workflow_dispatch:
 
 concurrency:
-  group: deploy-main
+  group: deploy-master
   cancel-in-progress: true
 
 jobs:
@@ -29,8 +29,8 @@ jobs:
             cd /root/Workspace/s/link-shortcuts
 
             echo "Pulling new version..."
-            git fetch origin main
-            git reset --hard origin/main
+            git fetch origin master
+            git reset --hard origin/master
 
             echo "Rebuilding containers..."
             docker compose up -d --build
