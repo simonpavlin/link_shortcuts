@@ -1,5 +1,4 @@
 import { useSortable } from '@dnd-kit/sortable'
-import { Button } from '../shared/Button'
 
 export const RuleRow = ({ rule, onEdit, onDelete }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
@@ -14,17 +13,13 @@ export const RuleRow = ({ rule, onEdit, onDelete }) => {
 
   return (
     <div ref={setNodeRef} style={style} className={`rule-row${isDragging ? ' dragging' : ''}`}>
-      <span className="rule-drag-handle" {...attributes} {...listeners} title="Drag to reorder">
-        ⠿
-      </span>
-      <span className="rule-label">
-        {rule.label || <em className="text-muted">no label</em>}
-      </span>
+      <span className="rule-drag-handle" {...attributes} {...listeners} title="Drag to reorder">⠿</span>
+      <span className="rule-label">{rule.label || <em style={{ color: 'var(--text-label)' }}>—</em>}</span>
       <code className="rule-pattern">{rule.pattern}</code>
       <span className="rule-url">{rule.url}</span>
-      <div className="rule-actions">
-        <Button variant="ghost" size="sm" onClick={onEdit}>Edit</Button>
-        <Button variant="danger" size="sm" onClick={onDelete}>Delete</Button>
+      <div className="rule-row-actions">
+        <button className="btn-icon-bare" onClick={onEdit} title="Edit">edit</button>
+        <button className="btn-icon-bare danger" onClick={onDelete} title="Delete">del</button>
       </div>
     </div>
   )

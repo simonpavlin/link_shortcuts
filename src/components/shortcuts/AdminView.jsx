@@ -11,7 +11,6 @@ import {
 } from '../../utils/shortcuts.utils'
 import { ShortcutList } from './ShortcutList'
 import { ShortcutDetail } from './ShortcutDetail'
-import { ShortcutEditor } from './ShortcutEditor'
 import { ImportExport } from './ImportExport'
 
 const STORAGE_KEY = 'linker_shortcuts'
@@ -22,7 +21,6 @@ export const AdminView = ({ prefillCommand, prefillParam }) => {
   const [selectedId, setSelectedId] = useState(() =>
     prefillCommand ? (data.shortcuts.find((s) => s.key === prefillCommand)?.id ?? null) : null
   )
-  const [editingShortcut, setEditingShortcut] = useState(null) // null | 'new' | shortcut object
 
   const { shortcuts } = data
   const mutate = (newShortcuts) => setData({ shortcuts: newShortcuts })
@@ -31,13 +29,9 @@ export const AdminView = ({ prefillCommand, prefillParam }) => {
     const result = addShortcut(shortcuts, formData)
     mutate(result.shortcuts)
     setSelectedId(result.newId)
-    setEditingShortcut(null)
   }
 
-  const handleUpdateShortcut = (formData) => {
-    mutate(updateShortcut(shortcuts, editingShortcut.id, formData))
-    setEditingShortcut(null)
-  }
+  const handleUpdateShortcut = (id, formData) => mutate(updateShortcut(shortcuts, id, formData))
 
   const handleDeleteShortcut = (id) => {
     mutate(deleteShortcut(shortcuts, id))
@@ -55,40 +49,40 @@ export const AdminView = ({ prefillCommand, prefillParam }) => {
   const selectedShortcut = shortcuts.find((s) => s.id === selectedId) ?? null
 
   return (
-    <div className="admin-view">
-      <ShortcutList
-        shortcuts={shortcuts}
-        selectedId={selectedId}
-        onSelect={setSelectedId}
-        onAdd={() => setEditingShortcut('new')}
-        onEdit={(s) => setEditingShortcut(s)}
-        onDelete={handleDeleteShortcut}
-      />
+    <div className="admin-page">
+      <div className="page-grid">
 
-      <div className="admin-main">
-        <ShortcutDetail
-          shortcut={selectedShortcut}
-          prefillParam={prefillParam}
-          onAddRule={handleAddRule}
-          onUpdateRule={handleUpdateRule}
-          onDeleteRule={handleDeleteRule}
-          onReorderRules={handleReorderRules}
-        />
-        <div className="admin-footer">
-          <ImportExport
+        {/* Left card – shortcuts list */}
+        <div className="card shortcuts-card">
+          <ShortcutList
             shortcuts={shortcuts}
-            onImport={(newShortcuts) => { mutate(newShortcuts); setSelectedId(null) }}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+            onAdd={handleAddShortcut}
+            onUpdate={handleUpdateShortcut}
+            onDelete={handleDeleteShortcut}
+          />
+          <div className="sidebar-footer">
+            <ImportExport
+              shortcuts={shortcuts}
+              onImport={(newShortcuts) => { mutate(newShortcuts); setSelectedId(null) }}
+            />
+          </div>
+        </div>
+
+        {/* Right card – shortcut detail */}
+        <div className="card detail-card">
+          <ShortcutDetail
+            shortcut={selectedShortcut}
+            prefillParam={prefillParam}
+            onAddRule={handleAddRule}
+            onUpdateRule={handleUpdateRule}
+            onDeleteRule={handleDeleteRule}
+            onReorderRules={handleReorderRules}
           />
         </div>
-      </div>
 
-      {editingShortcut && (
-        <ShortcutEditor
-          shortcut={editingShortcut === 'new' ? null : editingShortcut}
-          onSave={editingShortcut === 'new' ? handleAddShortcut : handleUpdateShortcut}
-          onCancel={() => setEditingShortcut(null)}
-        />
-      )}
+      </div>
     </div>
   )
 }

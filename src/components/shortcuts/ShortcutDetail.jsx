@@ -1,6 +1,6 @@
+import { BrowserUrlBanner } from './BrowserUrlBanner'
 import { RuleList } from './RuleList'
 import { TestPanel } from './TestPanel'
-import { BrowserUrlBanner } from './BrowserUrlBanner'
 
 export const ShortcutDetail = ({
   shortcut,
@@ -12,23 +12,21 @@ export const ShortcutDetail = ({
 }) => {
   if (!shortcut) {
     return (
-      <div className="shortcut-detail-empty">
-        <p className="text-muted">Select a shortcut on the left or add a new one.</p>
+      <div className="detail-empty">
+        select a shortcut or add a new one
       </div>
     )
   }
 
   return (
-    <div className="shortcut-detail">
-      <div className="shortcut-detail-header">
-        <h2 className="shortcut-detail-title">
-          <code>{shortcut.key}</code>
-          {shortcut.name && <span> – {shortcut.name}</span>}
-        </h2>
+    <>
+      <div className="detail-header">
+        <span className="detail-key-badge">{shortcut.key}</span>
+        {shortcut.name && <span className="detail-name">{shortcut.name}</span>}
         <BrowserUrlBanner shortcutKey={shortcut.key} />
       </div>
 
-      <div className="shortcut-detail-body">
+      <div className="detail-body">
         <RuleList
           rules={shortcut.rules}
           onAdd={(data) => onAddRule(shortcut.id, data)}
@@ -38,6 +36,6 @@ export const ShortcutDetail = ({
         />
         <TestPanel rules={shortcut.rules} prefillParam={prefillParam} />
       </div>
-    </div>
+    </>
   )
 }

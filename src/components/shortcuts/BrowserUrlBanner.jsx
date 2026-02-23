@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { buildBrowserUrl } from '../../utils/url.utils'
-import { Button } from '../shared/Button'
 
 export const BrowserUrlBanner = ({ shortcutKey }) => {
   const [copied, setCopied] = useState(false)
@@ -15,11 +14,11 @@ export const BrowserUrlBanner = ({ shortcutKey }) => {
 
   return (
     <div className="url-banner">
-      <span className="url-banner-label">Browser URL:</span>
-      <code className="url-banner-url">{url}</code>
-      <Button variant="secondary" size="sm" onClick={handleCopy}>
-        {copied ? '✓ Copied' : 'Copy'}
-      </Button>
+      <span className="url-banner-label">Browser URL</span>
+      <code className="url-banner-url" title={url}>{url}</code>
+      <button className="btn btn-ghost btn-sm" onClick={handleCopy}>
+        {copied ? '✓ copied' : 'copy'}
+      </button>
     </div>
   )
 }
