@@ -1,4 +1,5 @@
 import { useSortable } from '@dnd-kit/sortable'
+import { IconDrag, IconPencil, IconTrash, IconArrowRight } from '../shared/icons'
 
 export const RuleRow = ({ rule, onEdit, onDelete }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
@@ -13,13 +14,15 @@ export const RuleRow = ({ rule, onEdit, onDelete }) => {
 
   return (
     <div ref={setNodeRef} style={style} className={`rule-row${isDragging ? ' dragging' : ''}`}>
-      <span className="rule-drag-handle" {...attributes} {...listeners} title="Drag to reorder">⠿</span>
-      <span className="rule-label">{rule.label || <em style={{ color: 'var(--text-label)' }}>—</em>}</span>
-      <code className="rule-pattern">{rule.pattern}</code>
-      <span className="rule-url">{rule.url}</span>
+      <span className="rule-drag-handle" {...attributes} {...listeners} title="Drag to reorder">
+        <IconDrag />
+      </span>
+      <span className="rule-pattern-text">{rule.pattern}</span>
+      <span className="rule-arrow-icon"><IconArrowRight /></span>
+      <span className="rule-url-text">{rule.url}</span>
       <div className="rule-row-actions">
-        <button className="btn-icon-bare" onClick={onEdit} title="Edit">edit</button>
-        <button className="btn-icon-bare danger" onClick={onDelete} title="Delete">del</button>
+        <button className="icon-btn" onClick={onEdit} title="Edit"><IconPencil /></button>
+        <button className="icon-btn danger" onClick={onDelete} title="Delete"><IconTrash /></button>
       </div>
     </div>
   )

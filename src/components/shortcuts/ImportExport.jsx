@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { IconDownload, IconUpload } from '../shared/icons'
 
 export const ImportExport = ({ shortcuts, onImport }) => {
   const fileRef = useRef()
@@ -35,8 +36,12 @@ export const ImportExport = ({ shortcuts, onImport }) => {
 
   return (
     <div className="import-export">
-      <button className="btn btn-ghost btn-sm" onClick={handleExport}>↓ export</button>
-      <button className="btn btn-ghost btn-sm" onClick={() => fileRef.current.click()}>↑ import</button>
+      <button className="btn btn-ghost btn-sm" onClick={handleExport} title="Export to JSON">
+        <IconDownload /> export
+      </button>
+      <button className="btn btn-ghost btn-sm" onClick={() => fileRef.current.click()} title="Import from JSON">
+        <IconUpload /> import
+      </button>
       <input
         ref={fileRef}
         type="file"

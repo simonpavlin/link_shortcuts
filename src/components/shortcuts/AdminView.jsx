@@ -9,79 +9,101 @@ import {
   deleteRule,
   reorderRules,
 } from '../../utils/shortcuts.utils'
-import { ShortcutList } from './ShortcutList'
-import { ShortcutDetail } from './ShortcutDetail'
+import { ShortcutCard } from './ShortcutCard'
 import { ImportExport } from './ImportExport'
+import { IconPlus } from '../shared/icons'
 
 const STORAGE_KEY = 'linker_shortcuts'
 const INITIAL = { shortcuts: [] }
 
 export const AdminView = ({ prefillCommand, prefillParam }) => {
   const [data, setData] = useLocalStorage(STORAGE_KEY, INITIAL)
-  const [selectedId, setSelectedId] = useState(() =>
-    prefillCommand ? (data.shortcuts.find((s) => s.key === prefillCommand)?.id ?? null) : null
-  )
+  const [addingNew, setAddingNew] = useState(false)
+  const [newForm, setNewForm] = useState({ key: '', name: '' })
 
   const { shortcuts } = data
   const mutate = (newShortcuts) => setData({ shortcuts: newShortcuts })
 
-  const handleAddShortcut = (formData) => {
-    const result = addShortcut(shortcuts, formData)
+  const handleAddShortcut = () => {
+    if (!newForm.key.trim()) return
+    const result = addShortcut(shortcuts, newForm)
     mutate(result.shortcuts)
-    setSelectedId(result.newId)
+    setAddingNew(false)
+    setNewForm({ key: '', name: '' })
   }
 
-  const handleUpdateShortcut = (id, formData) => mutate(updateShortcut(shortcuts, id, formData))
-
-  const handleDeleteShortcut = (id) => {
-    mutate(deleteShortcut(shortcuts, id))
-    if (selectedId === id) setSelectedId(null)
+  const handleNewKeyDown = (e) => {
+    if (e.key === 'Enter') handleAddShortcut()
+    if (e.key === 'Escape') { setAddingNew(false); setNewForm({ key: '', name: '' }) }
   }
-
-  const handleAddRule = (shortcutId, ruleData) => mutate(addRule(shortcuts, shortcutId, ruleData))
-  const handleUpdateRule = (shortcutId, ruleId, ruleData) =>
-    mutate(updateRule(shortcuts, shortcutId, ruleId, ruleData))
-  const handleDeleteRule = (shortcutId, ruleId) =>
-    mutate(deleteRule(shortcuts, shortcutId, ruleId))
-  const handleReorderRules = (shortcutId, newRules) =>
-    mutate(reorderRules(shortcuts, shortcutId, newRules))
-
-  const selectedShortcut = shortcuts.find((s) => s.id === selectedId) ?? null
 
   return (
     <div className="admin-page">
-      <div className="page-grid">
+      <div className="shortcuts-stack">
+        {shortcuts.length === 0 && !addingNew && (
+          <p className="empty-hint">No shortcuts yet — add one below.</p>
+        )}
 
-        {/* Left card – shortcuts list */}
-        <div className="card shortcuts-card">
-          <ShortcutList
-            shortcuts={shortcuts}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-            onAdd={handleAddShortcut}
-            onUpdate={handleUpdateShortcut}
-            onDelete={handleDeleteShortcut}
+        {shortcuts.map((s) => (
+          <ShortcutCard
+            key={s.id}
+            shortcut={s}
+            prefillParam={s.key === prefillCommand ? prefillParam : undefined}
+            onUpdate={(id, formData) => mutate(updateShortcut(shortcuts, id, formData))}
+            onDelete={(id) => mutate(deleteShortcut(shortcuts, id))}
+            onAddRule={(shortcutId, ruleData) => mutate(addRule(shortcuts, shortcutId, ruleData))}
+            onUpdateRule={(shortcutId, ruleId, ruleData) =>
+              mutate(updateRule(shortcuts, shortcutId, ruleId, ruleData))
+            }
+            onDeleteRule={(shortcutId, ruleId) =>
+              mutate(deleteRule(shortcuts, shortcutId, ruleId))
+            }
+            onReorderRules={(shortcutId, newRules) =>
+              mutate(reorderRules(shortcuts, shortcutId, newRules))
+            }
           />
-          <div className="sidebar-footer">
-            <ImportExport
-              shortcuts={shortcuts}
-              onImport={(newShortcuts) => { mutate(newShortcuts); setSelectedId(null) }}
-            />
+        ))}
+
+        {addingNew ? (
+          <div className="shortcut-card">
+            <div className="add-shortcut-form">
+              <input
+                className="input input-key"
+                value={newForm.key}
+                onChange={(e) => setNewForm((f) => ({ ...f, key: e.target.value }))}
+                onKeyDown={handleNewKeyDown}
+                placeholder="key"
+                autoFocus
+              />
+              <input
+                className="input"
+                value={newForm.name}
+                onChange={(e) => setNewForm((f) => ({ ...f, name: e.target.value }))}
+                onKeyDown={handleNewKeyDown}
+                placeholder="name (optional)"
+                style={{ flex: 1 }}
+              />
+              <button className="btn btn-primary btn-sm" onClick={handleAddShortcut}>add</button>
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={() => { setAddingNew(false); setNewForm({ key: '', name: '' }) }}
+              >
+                cancel
+              </button>
+            </div>
           </div>
-        </div>
+        ) : (
+          <button className="add-card-btn" onClick={() => setAddingNew(true)}>
+            <IconPlus /> add shortcut
+          </button>
+        )}
+      </div>
 
-        {/* Right card – shortcut detail */}
-        <div className="card detail-card">
-          <ShortcutDetail
-            shortcut={selectedShortcut}
-            prefillParam={prefillParam}
-            onAddRule={handleAddRule}
-            onUpdateRule={handleUpdateRule}
-            onDeleteRule={handleDeleteRule}
-            onReorderRules={handleReorderRules}
-          />
-        </div>
-
+      <div className="page-footer-fixed">
+        <ImportExport
+          shortcuts={shortcuts}
+          onImport={(newShortcuts) => mutate(newShortcuts)}
+        />
       </div>
     </div>
   )

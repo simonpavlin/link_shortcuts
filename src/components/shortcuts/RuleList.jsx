@@ -14,101 +14,101 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import { PATTERN_TYPES } from '../../utils/shortcuts.utils'
-import { Eyebrow } from '../shared/Eyebrow'
 import { RuleRow } from './RuleRow'
+import { IconArrowRight, IconCheck } from '../shared/icons'
 
-// Internal inline form – not a modal
-const RuleForm = ({ rule, onSave, onCancel }) => {
-  const [form, setForm] = useState({
-    label: rule?.label ?? '',
-    patternType: rule?.patternType ?? 'is-any',
-    pattern: rule?.pattern ?? '',
-    url: rule?.url ?? '',
-  })
+// ── Preset chips config ───────────────────────────────────────────────────────
+const PRESETS = [
+  { key: 'is-number', label: 'number', pattern: '^\\d+$' },
+  { key: 'is-word',   label: 'word',   pattern: '^\\w+$' },
+  { key: 'is-any',    label: 'anything', pattern: '.*' },
+]
 
-  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }))
+const detectPreset = (pattern) =>
+  PRESETS.find((p) => p.pattern === pattern)?.key ?? null
 
-  const handleTypeChange = (patternType) => {
-    const pattern = patternType === 'custom' ? form.pattern : (PATTERN_TYPES[patternType]?.pattern ?? '')
-    setForm((f) => ({ ...f, patternType, pattern }))
+// ── Shared form (phantom row + edit mode) ─────────────────────────────────────
+const RuleForm = ({ initPattern = '', initUrl = '', onSave, onCancel }) => {
+  const [pattern, setPattern] = useState(initPattern)
+  const [url, setUrl] = useState(initUrl)
+
+  const activePreset = detectPreset(pattern)
+
+  const handleSave = () => {
+    if (!url.trim()) return
+    const presetKey = detectPreset(pattern)
+    const patternType = presetKey ?? 'custom'
+    const label = presetKey ? PATTERN_TYPES[presetKey].label : ''
+    onSave({ pattern, url, patternType, label })
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    if (!form.url.trim()) return
-    if (form.patternType === 'custom' && !form.pattern.trim()) return
-    onSave(form)
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); handleSave() }
+    if (e.key === 'Escape' && onCancel) onCancel()
   }
 
   return (
-    <div className="rule-inline-form">
-      <form onSubmit={handleSubmit}>
-        <div className="rule-form-top">
-          <div className="field">
-            <label className="field-label">Label</label>
-            <input
-              className="input"
-              value={form.label}
-              onChange={(e) => set('label', e.target.value)}
-              placeholder="e.g. MR number"
-              autoFocus
-            />
-          </div>
-          <div className="field">
-            <label className="field-label">Condition</label>
-            <select
-              className="input"
-              value={form.patternType}
-              onChange={(e) => handleTypeChange(e.target.value)}
-            >
-              {Object.entries(PATTERN_TYPES).map(([key, { label }]) => (
-                <option key={key} value={key}>{label}</option>
-              ))}
-            </select>
-          </div>
+    <div className="rule-form">
+      <div className="preset-chips">
+        {PRESETS.map((p) => (
+          <button
+            key={p.key}
+            type="button"
+            className={`preset-chip${activePreset === p.key ? ' active' : ''}`}
+            onClick={() => setPattern(p.pattern)}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+      <div className="rule-form-row">
+        <input
+          className="input input-ghost"
+          placeholder="regex…"
+          value={pattern}
+          onChange={(e) => setPattern(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+        <span className="rule-form-arrow"><IconArrowRight /></span>
+        <input
+          className="input input-ghost"
+          placeholder="https://example.com/%s"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+        <button className="icon-btn" type="button" onClick={handleSave} title="Save rule">
+          <IconCheck />
+        </button>
+      </div>
+      {onCancel && (
+        <div className="form-actions" style={{ paddingBottom: 4 }}>
+          <button className="btn btn-ghost btn-sm" type="button" onClick={onCancel}>cancel</button>
         </div>
-
-        {form.patternType !== 'custom' && (
-          <p className="pattern-hint">
-            pattern: <code>{PATTERN_TYPES[form.patternType]?.pattern}</code>
-          </p>
-        )}
-
-        {form.patternType === 'custom' && (
-          <div className="field">
-            <label className="field-label">Pattern</label>
-            <input
-              className="input"
-              value={form.pattern}
-              onChange={(e) => set('pattern', e.target.value)}
-              placeholder="e.g. ^\d{4}$"
-              required
-            />
-          </div>
-        )}
-
-        <div className="field">
-          <label className="field-label">Target URL <span style={{ color: 'var(--text-label)' }}>(%s = parameter)</span></label>
-          <input
-            className="input"
-            value={form.url}
-            onChange={(e) => set('url', e.target.value)}
-            placeholder="https://example.com/%s"
-            required
-          />
-        </div>
-
-        <div className="form-actions" style={{ marginTop: 2 }}>
-          <button type="button" className="btn btn-ghost btn-sm" onClick={onCancel}>cancel</button>
-          <button type="submit" className="btn btn-primary btn-sm">save</button>
-        </div>
-      </form>
+      )}
     </div>
   )
 }
 
+// ── Phantom always-visible add row ───────────────────────────────────────────
+const PhantomRow = ({ onAdd }) => {
+  const [resetKey, setResetKey] = useState(0)
+
+  const handleSave = (data) => {
+    onAdd(data)
+    setResetKey((k) => k + 1)
+  }
+
+  return (
+    <div className="rule-phantom-wrap">
+      <RuleForm key={resetKey} onSave={handleSave} />
+    </div>
+  )
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
 export const RuleList = ({ rules, onReorder, onAdd, onUpdate, onDelete }) => {
-  const [editing, setEditing] = useState(null) // null | 'new' | rule.id string
+  const [editingId, setEditingId] = useState(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -122,71 +122,37 @@ export const RuleList = ({ rules, onReorder, onAdd, onUpdate, onDelete }) => {
     onReorder(arrayMove(rules, oldIndex, newIndex))
   }
 
-  const handleSave = (formData) => {
-    if (editing === 'new') {
-      onAdd(formData)
-    } else {
-      onUpdate(editing, formData)
-    }
-    setEditing(null)
-  }
-
-  // Exclude the rule being edited from sortable (it renders as a form, not a draggable)
-  const editingRuleId = editing && editing !== 'new' ? editing : null
-  const sortableIds = rules.map((r) => r.id).filter((id) => id !== editingRuleId)
+  const sortableIds = editingId
+    ? rules.map((r) => r.id).filter((id) => id !== editingId)
+    : rules.map((r) => r.id)
 
   return (
-    <div className="detail-section">
-      <div className="section-header-row">
-        <Eyebrow>Rules</Eyebrow>
-        {editing !== 'new' && (
-          <button className="btn btn-ghost btn-sm" onClick={() => setEditing('new')}>
-            + add
-          </button>
-        )}
-      </div>
-
-      <div className="rule-table">
-        {rules.length > 0 && (
-          <div className="rule-table-head">
-            <span />
-            <span>label</span>
-            <span>pattern</span>
-            <span>target url</span>
-            <span />
-          </div>
-        )}
-
-        {rules.length === 0 && editing !== 'new' && (
-          <p className="rule-empty">No rules yet. Add your first rule.</p>
-        )}
-
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
-            {rules.map((rule) =>
-              editing === rule.id ? (
+    <div className="rule-table">
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
+          {rules.map((rule) =>
+            editingId === rule.id ? (
+              <div key={`edit-${rule.id}`} className="rule-edit-wrap">
                 <RuleForm
-                  key={`form-${rule.id}`}
-                  rule={rule}
-                  onSave={handleSave}
-                  onCancel={() => setEditing(null)}
+                  initPattern={rule.pattern}
+                  initUrl={rule.url}
+                  onSave={(data) => { onUpdate(rule.id, data); setEditingId(null) }}
+                  onCancel={() => setEditingId(null)}
                 />
-              ) : (
-                <RuleRow
-                  key={rule.id}
-                  rule={rule}
-                  onEdit={() => setEditing(rule.id)}
-                  onDelete={() => onDelete(rule.id)}
-                />
-              )
-            )}
-          </SortableContext>
-        </DndContext>
+              </div>
+            ) : (
+              <RuleRow
+                key={rule.id}
+                rule={rule}
+                onEdit={() => setEditingId(rule.id)}
+                onDelete={() => onDelete(rule.id)}
+              />
+            )
+          )}
+        </SortableContext>
+      </DndContext>
 
-        {editing === 'new' && (
-          <RuleForm onSave={handleSave} onCancel={() => setEditing(null)} />
-        )}
-      </div>
+      <PhantomRow onAdd={onAdd} />
     </div>
   )
 }
