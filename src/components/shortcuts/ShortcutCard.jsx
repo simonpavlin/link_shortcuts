@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { evaluateRules } from '../../utils/shortcuts.utils'
 import { RuleList } from './RuleList'
-import { TestPanel } from './TestPanel'
 import { BrowserUrlBanner } from './BrowserUrlBanner'
-import { IconPencil, IconTrash } from '../shared/icons'
+import { IconPencil, IconTrash, IconLock, IconLockOpen } from '../shared/icons'
 
 export const ShortcutCard = ({
   shortcut,
@@ -14,8 +14,26 @@ export const ShortcutCard = ({
   onDeleteRule,
   onReorderRules,
 }) => {
+  const [locked, setLocked] = useState(false)
+  const [lockFlash, setLockFlash] = useState(0)
+  const [testParam, setTestParam] = useState(prefillParam ?? '')
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState({ key: shortcut.key, name: shortcut.name })
+
+  useEffect(() => {
+    if (prefillParam) setTestParam(prefillParam)
+  }, [prefillParam])
+
+  const testResults = testParam.length > 0
+    ? Object.fromEntries(evaluateRules(shortcut.rules, testParam).map((r) => [r.rule.id, r]))
+    : null
+
+  const flashLock = () => setLockFlash((n) => n + 1)
+
+  const handleLockToggle = () => {
+    setLocked((l) => !l)
+    if (editing) setEditing(false)
+  }
 
   const handleSave = () => {
     if (!form.key.trim()) return
@@ -29,12 +47,20 @@ export const ShortcutCard = ({
   }
 
   const startEdit = () => {
+    if (locked) { flashLock(); return }
     setForm({ key: shortcut.key, name: shortcut.name })
     setEditing(true)
   }
 
   return (
-    <div className="shortcut-card">
+    <div className={`shortcut-card${locked ? ' locked' : ''}`}>
+
+      {lockFlash > 0 && (
+        <div key={lockFlash} className="lock-notify" onAnimationEnd={() => setLockFlash(0)}>
+          Card is locked — click the lock icon to unlock.
+        </div>
+      )}
+
       <div className="shortcut-card-header">
         {editing ? (
           <div className="header-edit-form">
@@ -66,26 +92,47 @@ export const ShortcutCard = ({
             <div className="header-spacer" />
             <BrowserUrlBanner shortcutKey={shortcut.key} />
             <div className="header-actions">
-              <button className="icon-btn" onClick={startEdit} title="Edit">
-                <IconPencil />
-              </button>
-              <button className="icon-btn danger" onClick={() => onDelete(shortcut.id)} title="Delete">
-                <IconTrash />
-              </button>
+              {!locked && (
+                <>
+                  <button className="icon-btn" onClick={startEdit} title="Edit shortcut">
+                    <IconPencil />
+                  </button>
+                  <button className="icon-btn danger" onClick={() => onDelete(shortcut.id)} title="Delete shortcut">
+                    <IconTrash />
+                  </button>
+                </>
+              )}
             </div>
+            <button
+              className={`lock-btn${locked ? ' active' : ''}`}
+              onClick={handleLockToggle}
+              title={locked ? 'Unlock card' : 'Lock card'}
+            >
+              {locked ? <IconLock /> : <IconLockOpen />}
+            </button>
           </>
         )}
       </div>
 
+      <div className="card-test-bar">
+        <input
+          className="test-input"
+          placeholder="Test parameter…"
+          value={testParam}
+          onChange={(e) => setTestParam(e.target.value)}
+        />
+      </div>
+
       <RuleList
         rules={shortcut.rules}
+        testResults={testResults}
+        locked={locked}
+        onLockedClick={flashLock}
         onReorder={(newRules) => onReorderRules(shortcut.id, newRules)}
         onAdd={(ruleData) => onAddRule(shortcut.id, ruleData)}
         onUpdate={(ruleId, ruleData) => onUpdateRule(shortcut.id, ruleId, ruleData)}
         onDelete={(ruleId) => onDeleteRule(shortcut.id, ruleId)}
       />
-
-      <TestPanel rules={shortcut.rules} prefillParam={prefillParam} />
     </div>
   )
 }

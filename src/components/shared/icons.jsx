@@ -87,3 +87,19 @@ export const IconArrowRight = (props) => (
     <polyline points="9 4 13 8 9 12" />
   </svg>
 )
+
+export const IconLock = (props) => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"
+    stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <rect x="3.5" y="7.5" width="9" height="7" rx="1" />
+    <path d="M5.5 7.5V5.5a2.5 2.5 0 015 0v2" />
+  </svg>
+)
+
+export const IconLockOpen = (props) => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"
+    stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <rect x="3.5" y="7.5" width="9" height="7" rx="1" />
+    <path d="M5.5 7.5V5a2.5 2.5 0 015 0" />
+  </svg>
+)

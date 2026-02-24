@@ -17,17 +17,17 @@ import { PATTERN_TYPES } from '../../utils/shortcuts.utils'
 import { RuleRow } from './RuleRow'
 import { IconArrowRight, IconCheck } from '../shared/icons'
 
-// ── Preset chips config ───────────────────────────────────────────────────────
+// ── Preset chips ──────────────────────────────────────────────────────────────
 const PRESETS = [
-  { key: 'is-number', label: 'number', pattern: '^\\d+$' },
-  { key: 'is-word',   label: 'word',   pattern: '^\\w+$' },
+  { key: 'is-number', label: 'number',   pattern: '^\\d+$' },
+  { key: 'is-word',   label: 'word',     pattern: '^\\w+$' },
   { key: 'is-any',    label: 'anything', pattern: '.*' },
 ]
 
 const detectPreset = (pattern) =>
   PRESETS.find((p) => p.pattern === pattern)?.key ?? null
 
-// ── Shared form (phantom row + edit mode) ─────────────────────────────────────
+// ── Shared form for phantom row and (optionally) edit mode ───────────────────
 const RuleForm = ({ initPattern = '', initUrl = '', onSave, onCancel }) => {
   const [pattern, setPattern] = useState(initPattern)
   const [url, setUrl] = useState(initUrl)
@@ -37,9 +37,12 @@ const RuleForm = ({ initPattern = '', initUrl = '', onSave, onCancel }) => {
   const handleSave = () => {
     if (!url.trim()) return
     const presetKey = detectPreset(pattern)
-    const patternType = presetKey ?? 'custom'
-    const label = presetKey ? PATTERN_TYPES[presetKey].label : ''
-    onSave({ pattern, url, patternType, label })
+    onSave({
+      pattern,
+      url,
+      patternType: presetKey ?? 'custom',
+      label: presetKey ? PATTERN_TYPES[presetKey].label : '',
+    })
   }
 
   const handleKeyDown = (e) => {
@@ -82,7 +85,7 @@ const RuleForm = ({ initPattern = '', initUrl = '', onSave, onCancel }) => {
         </button>
       </div>
       {onCancel && (
-        <div className="form-actions" style={{ paddingBottom: 4 }}>
+        <div style={{ padding: '0 8px 6px' }}>
           <button className="btn btn-ghost btn-sm" type="button" onClick={onCancel}>cancel</button>
         </div>
       )}
@@ -90,7 +93,7 @@ const RuleForm = ({ initPattern = '', initUrl = '', onSave, onCancel }) => {
   )
 }
 
-// ── Phantom always-visible add row ───────────────────────────────────────────
+// ── Phantom always-visible add row ────────────────────────────────────────────
 const PhantomRow = ({ onAdd }) => {
   const [resetKey, setResetKey] = useState(0)
 
@@ -107,7 +110,16 @@ const PhantomRow = ({ onAdd }) => {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export const RuleList = ({ rules, onReorder, onAdd, onUpdate, onDelete }) => {
+export const RuleList = ({
+  rules,
+  testResults,
+  locked,
+  onLockedClick,
+  onReorder,
+  onAdd,
+  onUpdate,
+  onDelete,
+}) => {
   const [editingId, setEditingId] = useState(null)
 
   const sensors = useSensors(
@@ -122,6 +134,7 @@ export const RuleList = ({ rules, onReorder, onAdd, onUpdate, onDelete }) => {
     onReorder(arrayMove(rules, oldIndex, newIndex))
   }
 
+  // Exclude editing row from sortable to avoid dnd interference
   const sortableIds = editingId
     ? rules.map((r) => r.id).filter((id) => id !== editingId)
     : rules.map((r) => r.id)
@@ -130,29 +143,24 @@ export const RuleList = ({ rules, onReorder, onAdd, onUpdate, onDelete }) => {
     <div className="rule-table">
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
-          {rules.map((rule) =>
-            editingId === rule.id ? (
-              <div key={`edit-${rule.id}`} className="rule-edit-wrap">
-                <RuleForm
-                  initPattern={rule.pattern}
-                  initUrl={rule.url}
-                  onSave={(data) => { onUpdate(rule.id, data); setEditingId(null) }}
-                  onCancel={() => setEditingId(null)}
-                />
-              </div>
-            ) : (
-              <RuleRow
-                key={rule.id}
-                rule={rule}
-                onEdit={() => setEditingId(rule.id)}
-                onDelete={() => onDelete(rule.id)}
-              />
-            )
-          )}
+          {rules.map((rule) => (
+            <RuleRow
+              key={rule.id}
+              rule={rule}
+              matchResult={testResults ? (testResults[rule.id] ?? null) : null}
+              locked={locked}
+              onLockedClick={onLockedClick}
+              isEditing={editingId === rule.id}
+              onEdit={() => setEditingId(rule.id)}
+              onSave={(data) => { onUpdate(rule.id, data); setEditingId(null) }}
+              onCancel={() => setEditingId(null)}
+              onDelete={() => onDelete(rule.id)}
+            />
+          ))}
         </SortableContext>
       </DndContext>
 
-      <PhantomRow onAdd={onAdd} />
+      {!locked && <PhantomRow onAdd={onAdd} />}
     </div>
   )
 }

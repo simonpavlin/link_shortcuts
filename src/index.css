@@ -386,6 +386,128 @@ a:hover { text-decoration: underline; }
 .rule-phantom-wrap:focus-within { opacity: 1; }
 
 /* =====================================================
+   CARD TEST BAR
+   ===================================================== */
+.card-test-bar {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.test-input {
+  width: 100%;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 4px 8px;
+  transition: border-color var(--t), background var(--t);
+}
+.test-input::placeholder { color: var(--text-label); }
+.test-input:focus {
+  outline: none;
+  border-color: rgba(0, 120, 212, 0.40);
+  background: rgba(0, 120, 212, 0.04);
+}
+
+/* =====================================================
+   LOCK BUTTON & NOTIFY
+   ===================================================== */
+.lock-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 3px;
+  border-radius: 4px;
+  color: var(--text-label);
+  opacity: 0.35;
+  flex-shrink: 0;
+  transition: color var(--t), background var(--t), opacity var(--t);
+  line-height: 0;
+}
+.shortcut-card-header:hover .lock-btn { opacity: 1; }
+.lock-btn:hover { color: var(--text-secondary); background: var(--surface-active); }
+.lock-btn.active { opacity: 1; color: var(--accent-1); }
+
+@keyframes lockNotify {
+  0%   { opacity: 1; }
+  65%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+.lock-notify {
+  padding: 5px 14px;
+  font-size: 11px;
+  color: var(--danger);
+  background: rgba(248, 113, 113, 0.06);
+  border-bottom: 1px solid rgba(248, 113, 113, 0.14);
+  letter-spacing: 0.02em;
+  animation: lockNotify 2s ease forwards;
+  pointer-events: none;
+}
+
+/* =====================================================
+   RULE INLINE EDIT
+   ===================================================== */
+
+/* Pattern input – looks like rule-pattern-text badge */
+.rule-input-pattern {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.07);
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  width: 100%;
+  outline: none;
+  line-height: 1.5;
+  transition: border-color var(--t), background var(--t);
+}
+.rule-input-pattern:focus {
+  border-color: rgba(0, 120, 212, 0.50);
+  background: rgba(0, 120, 212, 0.07);
+}
+
+/* URL input – looks like rule-url-text */
+.rule-input-url {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  padding: 1px 4px;
+  width: 100%;
+  outline: none;
+  transition: border-color var(--t), background var(--t), color var(--t);
+}
+.rule-input-url:focus {
+  border-color: rgba(0, 120, 212, 0.40);
+  background: rgba(0, 120, 212, 0.05);
+  color: var(--text);
+}
+
+/* Editing row state */
+.rule-row.editing {
+  background: rgba(0, 120, 212, 0.04);
+  border: 1px solid rgba(0, 120, 212, 0.14);
+  border-radius: var(--radius-sm);
+}
+.rule-row.editing .rule-row-actions { opacity: 1; }
+
+/* Match indicators */
+.rule-match-yes { color: var(--accent-3); display: flex; align-items: center; }
+.rule-match-no  { color: var(--text-label); display: flex; align-items: center; }
+
+/* Matched URL shown as link in url column */
+.rule-url-text.matched { color: var(--accent-3); }
+a.rule-url-text { text-decoration: none; }
+a.rule-url-text:hover { text-decoration: underline; }
+
+/* =====================================================
    BROWSER URL COPY BUTTON
    ===================================================== */
 .url-copy-btn {
