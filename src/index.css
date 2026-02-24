@@ -28,7 +28,7 @@
   --font-mono: 'DM Mono', 'SFMono-Regular', Consolas, monospace;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 
-  --content-width: 760px;
+  --content-width: 920px;
   --header-height: 50px;
   --radius: 10px;
   --radius-sm: 6px;
@@ -154,6 +154,13 @@ a:hover { text-decoration: underline; }
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background-image:
+    radial-gradient(ellipse 80% 40% at 15% -5%, rgba(0, 120, 212, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 28% at 85% 110%, rgba(67, 224, 151, 0.06) 0%, transparent 60%);
+}
+
+[data-theme="light"] .layout {
+  background-image: none;
 }
 
 .layout-header {
@@ -163,7 +170,9 @@ a:hover { text-decoration: underline; }
   align-items: center;
   padding: 0 24px;
   border-bottom: 1px solid var(--border);
-  background: rgba(12, 12, 16, 0.92);
+  background: rgba(12, 12, 16, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .layout-header-inner {
@@ -207,7 +216,65 @@ a:hover { text-decoration: underline; }
 .admin-page {
   max-width: var(--content-width);
   margin: 0 auto;
-  padding: 28px 20px 88px; /* bottom room for fixed footer */
+  padding: 44px 20px 88px;
+}
+
+/* =====================================================
+   PAGE HERO
+   ===================================================== */
+.page-hero {
+  margin-bottom: 40px;
+  animation: fadeUp 0.45s ease both;
+}
+
+.page-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-label);
+  margin-bottom: 14px;
+}
+
+.page-hero-line {
+  width: 16px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.10);
+  flex-shrink: 0;
+}
+
+[data-theme="light"] .page-hero-line {
+  background: #d0d0d8;
+}
+
+.page-hero-title {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: clamp(22px, 3.5vw, 30px);
+  color: var(--text);
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.page-hero-accent {
+  color: var(--accent-1);
+}
+
+.page-hero-desc {
+  margin-top: 10px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.65;
+  max-width: 520px;
+}
+
+.page-hero-desc strong {
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 /* =====================================================
@@ -810,7 +877,7 @@ select.input option { background: #1a1a24; color: var(--text); }
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.shortcut-card { animation: fadeUp 0.25s ease forwards; }
+.shortcut-card { animation: fadeUp 0.3s ease both; }
 
 /* =====================================================
    MOBILE

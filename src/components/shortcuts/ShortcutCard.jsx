@@ -6,6 +6,7 @@ import { IconPencil, IconTrash, IconLock, IconLockOpen } from '../shared/icons'
 
 export const ShortcutCard = ({
   shortcut,
+  animationDelay,
   prefillParam,
   onUpdate,
   onDelete,
@@ -53,7 +54,10 @@ export const ShortcutCard = ({
   }
 
   return (
-    <div className={`shortcut-card${locked ? ' locked' : ''}`}>
+    <div
+      className={`shortcut-card${locked ? ' locked' : ''}`}
+      style={animationDelay ? { animationDelay: `${animationDelay}s` } : undefined}
+    >
 
       {lockFlash > 0 && (
         <div key={lockFlash} className="lock-notify" onAnimationEnd={() => setLockFlash(0)}>
