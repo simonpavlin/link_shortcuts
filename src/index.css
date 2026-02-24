@@ -36,6 +36,97 @@
 }
 
 /* =====================================================
+   LIGHT MODE OVERRIDES
+   ===================================================== */
+[data-theme="light"] {
+  --bg: #e6e6eb;
+  --surface: #ffffff;
+  --surface-hover: #f6f6f9;
+  --surface-active: #ececf0;
+  --border: #ccccd6;
+  --border-hover: #ababba;
+
+  --text: #0d0d10;
+  --text-secondary: #404050;
+  --text-muted: #72727e;
+  --text-label: #9898a8;
+
+  --accent-3: #0d9060;
+  --danger: #b91c1c;
+}
+
+/* Scrollbar */
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #b8b8c8;
+}
+
+/* Header */
+[data-theme="light"] .layout-header {
+  background: rgba(230, 230, 235, 0.94);
+}
+
+/* Add shortcut dashed button */
+[data-theme="light"] .add-card-btn {
+  border-color: #c0c0cc;
+}
+[data-theme="light"] .add-card-btn:hover {
+  border-color: #9898aa;
+  background: var(--surface);
+}
+
+/* Eyebrow divider lines */
+[data-theme="light"] .eyebrow-line {
+  background: #d0d0d8;
+}
+[data-theme="light"] .eyebrow-btn:hover .eyebrow-text {
+  color: #606070;
+}
+
+/* Rule pattern badge */
+[data-theme="light"] .rule-pattern-text {
+  background: #ebebf0;
+  color: #1a1a2e;
+}
+
+/* Phantom row separator */
+[data-theme="light"] .rule-phantom-wrap {
+  border-top-color: #d0d0d8;
+}
+
+/* Inline edit inputs */
+[data-theme="light"] .rule-input-pattern {
+  background: #ebebf0;
+  border-color: #c8c8d4;
+  color: #1a1a2e;
+}
+[data-theme="light"] .rule-input-pattern:focus {
+  background: rgba(0, 120, 212, 0.06);
+  border-color: rgba(0, 120, 212, 0.50);
+}
+
+/* Standard input */
+[data-theme="light"] .input {
+  background: #f2f2f6;
+  border-color: #c8c8d4;
+}
+[data-theme="light"] .input::placeholder {
+  color: #a0a0b0;
+}
+[data-theme="light"] .input-ghost::placeholder {
+  color: #b0b0c0;
+}
+[data-theme="light"] select.input option {
+  background: #ffffff;
+  color: #0d0d10;
+}
+
+/* Shortcut key badge – keep blue tint but darken border */
+[data-theme="light"] .shortcut-key-badge {
+  background: #dceeff;
+  border-color: #a8cef0;
+}
+
+/* =====================================================
    BASE
    ===================================================== */
 html, body, #root {

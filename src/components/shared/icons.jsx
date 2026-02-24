@@ -88,6 +88,28 @@ export const IconArrowRight = (props) => (
   </svg>
 )
 
+export const IconSun = (props) => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"
+    stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <circle cx="8" cy="8" r="2.6" />
+    <line x1="8" y1="1.2" x2="8" y2="2.8" />
+    <line x1="8" y1="13.2" x2="8" y2="14.8" />
+    <line x1="1.2" y1="8" x2="2.8" y2="8" />
+    <line x1="13.2" y1="8" x2="14.8" y2="8" />
+    <line x1="3.3" y1="3.3" x2="4.4" y2="4.4" />
+    <line x1="11.6" y1="11.6" x2="12.7" y2="12.7" />
+    <line x1="12.7" y1="3.3" x2="11.6" y2="4.4" />
+    <line x1="4.4" y1="11.6" x2="3.3" y2="12.7" />
+  </svg>
+)
+
+export const IconMoon = (props) => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"
+    stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M13 10.5A5.5 5.5 0 115.5 3a4.5 4.5 0 007.5 7.5z" />
+  </svg>
+)
+
 export const IconLock = (props) => (
   <svg width="14" height="14" viewBox="0 0 16 16" fill="none"
     stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
