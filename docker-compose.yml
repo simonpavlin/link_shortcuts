@@ -3,3 +3,4 @@ services:
     build: .
     ports:
       - "6725:80"
+    restart: unless-stopped
