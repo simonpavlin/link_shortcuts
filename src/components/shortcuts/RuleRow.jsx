@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { PATTERN_TYPES } from '../../utils/shortcuts.utils'
-import { IconDrag, IconPencil, IconTrash, IconArrowRight, IconCheck, IconMinus } from '../shared/icons'
+import { IconDrag, IconTrash, IconArrowRight, IconCheck, IconMinus } from '../shared/icons'
 
 const PRESET_PATTERNS = {
   '^\\d+$': { patternType: 'is-number', label: PATTERN_TYPES['is-number'].label },
@@ -9,7 +9,7 @@ const PRESET_PATTERNS = {
   '.*':     { patternType: 'is-any',    label: PATTERN_TYPES['is-any'].label },
 }
 
-export const RuleRow = ({
+export const RuleRow = forwardRef(({
   rule,
   matchResult,
   locked,
@@ -19,15 +19,23 @@ export const RuleRow = ({
   onSave,
   onCancel,
   onDelete,
-}) => {
+}, ref) => {
   const [editPattern, setEditPattern] = useState(rule.pattern)
   const [editUrl, setEditUrl] = useState(rule.url)
 
-  // Sync form state when editing starts
+  // Refs so the imperative save() never reads stale closure values
+  const editPatternRef = useRef(rule.pattern)
+  const editUrlRef = useRef(rule.url)
+  const onSaveRef = useRef(onSave)
+  useEffect(() => { onSaveRef.current = onSave }, [onSave])
+
+  // Sync edit state when editing starts
   useEffect(() => {
     if (isEditing) {
       setEditPattern(rule.pattern)
       setEditUrl(rule.url)
+      editPatternRef.current = rule.pattern
+      editUrlRef.current = rule.url
     }
   }, [isEditing, rule.pattern, rule.url])
 
@@ -41,26 +49,41 @@ export const RuleRow = ({
     zIndex: isDragging ? 1 : undefined,
   }
 
-  const handleSave = () => {
-    if (!editUrl.trim()) return
-    const preset = PRESET_PATTERNS[editPattern]
-    onSave({
-      pattern: editPattern,
-      url: editUrl,
+  // Stable save function – reads from refs so it's safe to expose via imperative handle
+  const doSave = useCallback(() => {
+    if (!editUrlRef.current.trim()) return
+    const preset = PRESET_PATTERNS[editPatternRef.current]
+    onSaveRef.current({
+      pattern: editPatternRef.current,
+      url: editUrlRef.current,
       patternType: preset?.patternType ?? 'custom',
       label: preset?.label ?? '',
     })
-  }
+  }, [])
+
+  useImperativeHandle(ref, () => ({ save: doSave }), [doSave])
+
+  const handlePatternChange = (v) => { setEditPattern(v); editPatternRef.current = v }
+  const handleUrlChange = (v) => { setEditUrl(v); editUrlRef.current = v }
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); handleSave() }
+    if (e.key === 'Enter') { e.preventDefault(); doSave() }
     if (e.key === 'Escape') onCancel()
   }
 
-  const handleEdit = () => locked ? onLockedClick() : onEdit()
-  const handleDelete = () => locked ? onLockedClick() : onDelete()
+  const handleRowClick = () => {
+    if (isEditing) return
+    if (locked) { onLockedClick(); return }
+    onEdit()
+  }
 
-  // First column: editing → empty, testing → ✓/✗, default → drag handle
+  const handleDelete = (e) => {
+    e.stopPropagation()
+    if (locked) { onLockedClick(); return }
+    onDelete()
+  }
+
+  // First col: editing → empty, testing → ✓/✗, default → drag handle
   const firstCol = () => {
     if (isEditing) return <span />
     if (matchResult !== null) {
@@ -69,20 +92,26 @@ export const RuleRow = ({
         : <span className="rule-match-no"><IconMinus /></span>
     }
     return (
-      <span className="rule-drag-handle" {...attributes} {...listeners} title="Drag to reorder">
+      <span
+        className="rule-drag-handle"
+        {...attributes}
+        {...listeners}
+        onClick={(e) => e.stopPropagation()}
+        title="Drag to reorder"
+      >
         <IconDrag />
       </span>
     )
   }
 
-  // URL column: editing → input, matched → link with resolved URL, default → muted text
+  // URL col: editing → input, matched → link, default → muted text
   const urlCol = () => {
     if (isEditing) {
       return (
         <input
           className="rule-input-url"
           value={editUrl}
-          onChange={(e) => setEditUrl(e.target.value)}
+          onChange={(e) => handleUrlChange(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="https://example.com/%s"
         />
@@ -96,6 +125,7 @@ export const RuleRow = ({
           target="_blank"
           rel="noopener noreferrer"
           title={matchResult.resultUrl}
+          onClick={(e) => e.stopPropagation()}
         >
           {matchResult.resultUrl}
         </a>
@@ -108,7 +138,8 @@ export const RuleRow = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`rule-row${isDragging ? ' dragging' : ''}${isEditing ? ' editing' : ''}`}
+      className={`rule-row${isDragging ? ' dragging' : ''}${isEditing ? ' editing' : ''}${!isEditing && !locked ? ' rule-row-clickable' : ''}`}
+      onClick={handleRowClick}
     >
       {firstCol()}
 
@@ -116,7 +147,7 @@ export const RuleRow = ({
         <input
           className="rule-input-pattern"
           value={editPattern}
-          onChange={(e) => setEditPattern(e.target.value)}
+          onChange={(e) => handlePatternChange(e.target.value)}
           onKeyDown={handleKeyDown}
           autoFocus
         />
@@ -128,19 +159,13 @@ export const RuleRow = ({
 
       {urlCol()}
 
-      <div className="rule-row-actions">
-        {isEditing ? (
-          <>
-            <button className="icon-btn" onClick={handleSave} title="Save"><IconCheck /></button>
-            <button className="icon-btn" onClick={onCancel} title="Cancel"><IconMinus /></button>
-          </>
-        ) : (
-          <>
-            <button className="icon-btn" onClick={handleEdit} title="Edit"><IconPencil /></button>
-            <button className="icon-btn danger" onClick={handleDelete} title="Delete"><IconTrash /></button>
-          </>
+      <div className="rule-row-actions" onClick={(e) => e.stopPropagation()}>
+        {!isEditing && (
+          <button className="icon-btn danger" onClick={handleDelete} title="Delete"><IconTrash /></button>
         )}
       </div>
     </div>
   )
-}
+})
+
+RuleRow.displayName = 'RuleRow'

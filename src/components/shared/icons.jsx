@@ -11,19 +11,15 @@ export const IconDrag = (props) => (
   </svg>
 )
 
-export const IconPencil = (props) => (
-  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"
-    stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" />
-  </svg>
-)
 
 export const IconTrash = (props) => (
   <svg width="14" height="14" viewBox="0 0 16 16" fill="none"
-    stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M2 4h12" />
-    <path d="M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1" />
-    <path d="M5 4l.8 9h4.4L11 4" />
+    stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <line x1="2.5" y1="4.5" x2="13.5" y2="4.5" />
+    <path d="M6 4.5V3.5A.5.5 0 016.5 3h3a.5.5 0 01.5.5v1" />
+    <path d="M4 4.5l.75 8.5a.75.75 0 00.75.5h5a.75.75 0 00.75-.5L12 4.5" />
+    <line x1="6.5" y1="7" x2="6.5" y2="11" />
+    <line x1="9.5" y1="7" x2="9.5" y2="11" />
   </svg>
 )
 
@@ -123,5 +119,19 @@ export const IconLockOpen = (props) => (
     stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <rect x="3.5" y="7.5" width="9" height="7" rx="1" />
     <path d="M5.5 7.5V5a2.5 2.5 0 015 0" />
+  </svg>
+)
+
+export const IconPlay = (props) => (
+  <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" {...props}>
+    <polygon points="4 2 14 8 4 14" />
+  </svg>
+)
+
+export const IconX = (props) => (
+  <svg width="12" height="12" viewBox="0 0 16 16" fill="none"
+    stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" {...props}>
+    <line x1="4" y1="4" x2="12" y2="12" />
+    <line x1="12" y1="4" x2="4" y2="12" />
   </svg>
 )

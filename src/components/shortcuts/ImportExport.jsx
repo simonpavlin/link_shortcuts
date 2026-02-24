@@ -37,10 +37,10 @@ export const ImportExport = ({ shortcuts, onImport }) => {
   return (
     <div className="import-export">
       <button className="btn btn-ghost btn-sm" onClick={handleExport} title="Export to JSON">
-        <IconDownload /> export
+        <IconDownload /> Export
       </button>
       <button className="btn btn-ghost btn-sm" onClick={() => fileRef.current.click()} title="Import from JSON">
-        <IconUpload /> import
+        <IconUpload /> Import
       </button>
       <input
         ref={fileRef}

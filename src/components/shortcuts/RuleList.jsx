@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, forwardRef, useImperativeHandle } from 'react'
 import {
   DndContext,
   closestCenter,
@@ -15,102 +15,112 @@ import {
 } from '@dnd-kit/sortable'
 import { PATTERN_TYPES } from '../../utils/shortcuts.utils'
 import { RuleRow } from './RuleRow'
-import { IconArrowRight, IconCheck } from '../shared/icons'
+import { IconArrowRight } from '../shared/icons'
 
-// ── Preset chips ──────────────────────────────────────────────────────────────
-const PRESETS = [
-  { key: 'is-number', label: 'number',   pattern: '^\\d+$' },
-  { key: 'is-word',   label: 'word',     pattern: '^\\w+$' },
-  { key: 'is-any',    label: 'anything', pattern: '.*' },
-]
+// ── Pattern helpers ───────────────────────────────────────────────────────────
+const PRESET_PATTERNS = {
+  '^\\d+$': { patternType: 'is-number', label: PATTERN_TYPES['is-number'].label },
+  '^\\w+$': { patternType: 'is-word',   label: PATTERN_TYPES['is-word'].label },
+  '.*':     { patternType: 'is-any',    label: PATTERN_TYPES['is-any'].label },
+}
 
-const detectPreset = (pattern) =>
-  PRESETS.find((p) => p.pattern === pattern)?.key ?? null
+// ── Auto-expanding pending rows for adding new rules ─────────────────────────
+const PendingRows = ({ onAdd }) => {
+  const rowIdRef = useRef(1)
+  const newId = () => ++rowIdRef.current
 
-// ── Shared form for phantom row and (optionally) edit mode ───────────────────
-const RuleForm = ({ initPattern = '', initUrl = '', onSave, onCancel }) => {
-  const [pattern, setPattern] = useState(initPattern)
-  const [url, setUrl] = useState(initUrl)
+  const [rows, setRows] = useState([{ id: 0, pattern: '', url: '' }])
 
-  const activePreset = detectPreset(pattern)
-
-  const handleSave = () => {
-    if (!url.trim()) return
-    const presetKey = detectPreset(pattern)
-    onSave({
-      pattern,
-      url,
-      patternType: presetKey ?? 'custom',
-      label: presetKey ? PATTERN_TYPES[presetKey].label : '',
+  const handleChange = (id, field, value) => {
+    setRows((prev) => {
+      const next = prev.map((r) => (r.id === id ? { ...r, [field]: value } : r))
+      // When the last row gets any content → append a fresh empty row
+      const changedIdx = next.findIndex((r) => r.id === id)
+      const isLast = changedIdx === next.length - 1
+      const row = next[changedIdx]
+      if (isLast && (row.pattern || row.url)) {
+        return [...next, { id: newId(), pattern: '', url: '' }]
+      }
+      return next
     })
   }
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); handleSave() }
-    if (e.key === 'Escape' && onCancel) onCancel()
+  const commitRow = (id) => {
+    setRows((prev) => {
+      const row = prev.find((r) => r.id === id)
+      if (!row?.url.trim()) return prev
+      const preset = PRESET_PATTERNS[row.pattern]
+      onAdd({
+        pattern: row.pattern,
+        url: row.url,
+        patternType: preset?.patternType ?? 'custom',
+        label: preset?.label ?? '',
+      })
+      const filtered = prev.filter((r) => r.id !== id)
+      // Always keep at least one empty row at the bottom
+      const last = filtered[filtered.length - 1]
+      if (!last || last.pattern || last.url) {
+        return [...filtered, { id: newId(), pattern: '', url: '' }]
+      }
+      return filtered
+    })
+  }
+
+  const clearRow = (id) => {
+    setRows((prev) => {
+      const row = prev.find((r) => r.id === id)
+      if (!row) return prev
+      // If row has content → clear it; if already empty → remove it (keep ≥1)
+      if (row.pattern || row.url) {
+        return prev.map((r) => (r.id === id ? { ...r, pattern: '', url: '' } : r))
+      }
+      if (prev.length === 1) return prev
+      const filtered = prev.filter((r) => r.id !== id)
+      const last = filtered[filtered.length - 1]
+      if (!last || last.pattern || last.url) {
+        return [...filtered, { id: newId(), pattern: '', url: '' }]
+      }
+      return filtered
+    })
   }
 
   return (
-    <div className="rule-form">
-      <div className="preset-chips">
-        {PRESETS.map((p) => (
-          <button
-            key={p.key}
-            type="button"
-            className={`preset-chip${activePreset === p.key ? ' active' : ''}`}
-            onClick={() => setPattern(p.pattern)}
-          >
-            {p.label}
-          </button>
-        ))}
-      </div>
-      <div className="rule-form-row">
-        <input
-          className="input input-ghost"
-          placeholder="regex…"
-          value={pattern}
-          onChange={(e) => setPattern(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
-        <span className="rule-form-arrow"><IconArrowRight /></span>
-        <input
-          className="input input-ghost"
-          placeholder="https://example.com/%s"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
-        <button className="icon-btn" type="button" onClick={handleSave} title="Save rule">
-          <IconCheck />
-        </button>
-      </div>
-      {onCancel && (
-        <div style={{ padding: '0 8px 6px' }}>
-          <button className="btn btn-ghost btn-sm" type="button" onClick={onCancel}>cancel</button>
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ── Phantom always-visible add row ────────────────────────────────────────────
-const PhantomRow = ({ onAdd }) => {
-  const [resetKey, setResetKey] = useState(0)
-
-  const handleSave = (data) => {
-    onAdd(data)
-    setResetKey((k) => k + 1)
-  }
-
-  return (
-    <div className="rule-phantom-wrap">
-      <RuleForm key={resetKey} onSave={handleSave} />
+    <div className="pending-rows">
+      {rows.map((row) => {
+        const handleKeyDown = (e) => {
+          if (e.key === 'Enter') { e.preventDefault(); commitRow(row.id) }
+          if (e.key === 'Escape') clearRow(row.id)
+        }
+        return (
+          <div key={row.id} className="rule-phantom-wrap">
+            <div className="rule-form">
+              <div className="rule-form-row">
+                <input
+                  className="input input-ghost"
+                  placeholder="regex…"
+                  value={row.pattern}
+                  onChange={(e) => handleChange(row.id, 'pattern', e.target.value)}
+                  onKeyDown={handleKeyDown}
+                />
+                <span className="rule-form-arrow"><IconArrowRight /></span>
+                <input
+                  className="input input-ghost"
+                  placeholder="https://example.com/%s"
+                  value={row.url}
+                  onChange={(e) => handleChange(row.id, 'url', e.target.value)}
+                  onKeyDown={handleKeyDown}
+                />
+              </div>
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export const RuleList = ({
+export const RuleList = forwardRef(({
   rules,
   testResults,
   locked,
@@ -119,8 +129,20 @@ export const RuleList = ({
   onAdd,
   onUpdate,
   onDelete,
-}) => {
+  onEditingChange,
+}, ref) => {
   const [editingId, setEditingId] = useState(null)
+  const editingRowRef = useRef(null)
+
+  const handleSetEditing = (id) => {
+    setEditingId(id)
+    onEditingChange?.(id !== null)
+  }
+
+  useImperativeHandle(ref, () => ({
+    saveEditing: () => editingRowRef.current?.save(),
+    cancelEditing: () => handleSetEditing(null),
+  }))
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -134,7 +156,6 @@ export const RuleList = ({
     onReorder(arrayMove(rules, oldIndex, newIndex))
   }
 
-  // Exclude editing row from sortable to avoid dnd interference
   const sortableIds = editingId
     ? rules.map((r) => r.id).filter((id) => id !== editingId)
     : rules.map((r) => r.id)
@@ -146,21 +167,24 @@ export const RuleList = ({
           {rules.map((rule) => (
             <RuleRow
               key={rule.id}
+              ref={editingId === rule.id ? editingRowRef : null}
               rule={rule}
               matchResult={testResults ? (testResults[rule.id] ?? null) : null}
               locked={locked}
               onLockedClick={onLockedClick}
               isEditing={editingId === rule.id}
-              onEdit={() => setEditingId(rule.id)}
-              onSave={(data) => { onUpdate(rule.id, data); setEditingId(null) }}
-              onCancel={() => setEditingId(null)}
+              onEdit={() => handleSetEditing(rule.id)}
+              onSave={(data) => { onUpdate(rule.id, data); handleSetEditing(null) }}
+              onCancel={() => handleSetEditing(null)}
               onDelete={() => onDelete(rule.id)}
             />
           ))}
         </SortableContext>
       </DndContext>
 
-      {!locked && <PhantomRow onAdd={onAdd} />}
+      {!locked && <PendingRows onAdd={onAdd} />}
     </div>
   )
-}
+})
+
+RuleList.displayName = 'RuleList'

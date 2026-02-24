@@ -297,6 +297,58 @@ a:hover { text-decoration: underline; }
 /* =====================================================
    SHORTCUT CARD
    ===================================================== */
+.shortcut-card-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.shortcut-card-label {
+  padding: 0 4px;
+  min-height: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.shortcut-card-label-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+
+.shortcut-card-label-text.editable {
+  cursor: text;
+  transition: color var(--t);
+}
+.shortcut-card-label-text.editable:hover { color: var(--text); }
+
+.shortcut-card-label-input {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(0, 120, 212, 0.45);
+  border-radius: 0;
+  outline: none;
+  padding: 0 2px;
+  min-width: 70px;
+  max-width: 260px;
+}
+
+.shortcut-card-label-ghost {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-label);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--t);
+  letter-spacing: 0.03em;
+}
+.shortcut-card-wrap:hover .shortcut-card-label-ghost { opacity: 0.55; }
+.shortcut-card-label-ghost:hover { opacity: 1 !important; }
+
 .shortcut-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -344,13 +396,67 @@ a:hover { text-decoration: underline; }
 }
 .shortcut-card-header:hover .header-actions { opacity: 1; }
 
-/* Inline key/name edit form inside header */
-.header-edit-form {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex: 1;
+/* Inline key input – styled like the badge */
+.shortcut-key-input {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent-1);
+  background: rgba(0, 120, 212, 0.18);
+  border: 1px solid rgba(0, 120, 212, 0.50);
+  padding: 2px 8px;
+  border-radius: 4px;
+  outline: none;
+  width: 80px;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
 }
+
+/* Key badge clickable state */
+.shortcut-key-badge--editable {
+  cursor: text;
+  transition: background var(--t), border-color var(--t);
+}
+.shortcut-key-badge--editable:hover {
+  background: rgba(0, 120, 212, 0.22);
+  border-color: rgba(0, 120, 212, 0.45);
+}
+
+/* Inline name input – looks like plain text */
+.shortcut-name-input {
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(0, 120, 212, 0.45);
+  border-radius: 0;
+  outline: none;
+  padding: 0 2px;
+  font-family: var(--font-mono);
+  min-width: 70px;
+  max-width: 220px;
+}
+
+/* Name clickable state */
+.shortcut-card-name--editable {
+  cursor: text;
+  transition: color var(--t);
+}
+.shortcut-card-name--editable:hover { color: var(--text); }
+
+/* Ghost name (when name is empty) */
+.shortcut-name-ghost {
+  font-size: 11px;
+  color: var(--text-label);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--t);
+  letter-spacing: 0.03em;
+}
+.shortcut-card-header:hover .shortcut-name-ghost { opacity: 0.55; }
+.shortcut-name-ghost:hover { opacity: 1 !important; }
+
+/* Legacy form fields still used when manually triggered */
 .input-key { width: 72px; flex-shrink: 0; }
 .header-edit-actions { display: flex; gap: 6px; flex-shrink: 0; }
 
@@ -415,15 +521,16 @@ a:hover { text-decoration: underline; }
   flex-direction: column;
 }
 
-/* Row grid: drag | pattern | arrow | url | actions */
+/* Row grid: drag | pattern | arrow | url | action */
 .rule-row {
   display: grid;
-  grid-template-columns: 14px 1fr 14px 1.6fr 44px;
+  grid-template-columns: 14px 1fr 14px 1.6fr 24px;
   gap: 10px;
   align-items: center;
   padding: 6px 8px;
   border-radius: var(--radius-sm);
-  transition: background var(--t);
+  border: 1px solid transparent;
+  transition: background var(--t), border-color var(--t);
 }
 .rule-row:hover { background: var(--surface-hover); }
 .rule-row.dragging { background: var(--surface-active); opacity: 0.5; }
@@ -485,10 +592,10 @@ a:hover { text-decoration: underline; }
   gap: 7px;
 }
 
-/* Same grid as rule-row but with inputs */
+/* No ✓ button column – just pattern | arrow | url */
 .rule-form-row {
   display: grid;
-  grid-template-columns: 1fr 14px 1.6fr 28px;
+  grid-template-columns: 1fr 14px 1.6fr;
   gap: 10px;
   align-items: center;
 }
@@ -535,39 +642,63 @@ a:hover { text-decoration: underline; }
   margin: 2px 6px;
 }
 
-/* Phantom add row (always at bottom) */
+/* Pending add rows */
+.pending-rows { display: flex; flex-direction: column; }
+
 .rule-phantom-wrap {
   border-top: 1px dashed rgba(255, 255, 255, 0.07);
-  opacity: 0.5;
+  opacity: 0.45;
   transition: opacity var(--t);
+  animation: fadeUp 0.18s ease both;
 }
 .rule-phantom-wrap:focus-within { opacity: 1; }
+.rule-phantom-wrap:not(:first-child) { opacity: 0.3; }
+.rule-phantom-wrap:not(:first-child):focus-within { opacity: 1; }
 
 /* =====================================================
-   CARD TEST BAR
+   GLOBAL TEST FIELD
    ===================================================== */
-.card-test-bar {
-  padding: 6px 8px;
-  border-bottom: 1px solid var(--border);
+.global-test-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
 }
 
-.test-input {
-  width: 100%;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
+.global-test-input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   color: var(--text);
   font-family: var(--font-mono);
-  font-size: 12px;
-  padding: 4px 8px;
-  transition: border-color var(--t), background var(--t);
-}
-.test-input::placeholder { color: var(--text-label); }
-.test-input:focus {
+  font-size: 13px;
+  padding: 9px 14px;
   outline: none;
-  border-color: rgba(0, 120, 212, 0.40);
-  background: rgba(0, 120, 212, 0.04);
+  transition: border-color var(--t), background var(--t), box-shadow var(--t);
 }
+.global-test-input::placeholder { color: var(--text-label); }
+.global-test-input:focus {
+  border-color: rgba(0, 120, 212, 0.50);
+  background: rgba(0, 120, 212, 0.04);
+  box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.08);
+}
+
+/* =====================================================
+   CARD INLINE TEST (header test mode)
+   ===================================================== */
+.test-inline-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 0 8px;
+  outline: none;
+}
+.test-inline-input::placeholder { color: var(--text-label); }
 
 /* =====================================================
    LOCK BUTTON & NOTIFY
@@ -605,6 +736,48 @@ a:hover { text-decoration: underline; }
   animation: lockNotify 2s ease forwards;
   pointer-events: none;
 }
+
+/* =====================================================
+   CARD GLOBAL MATCH HIGHLIGHT  (clarity green)
+   ===================================================== */
+.card-global-match {
+  border-color: rgba(67, 224, 151, 0.45) !important;
+  box-shadow: 0 0 0 1px rgba(67, 224, 151, 0.18), 0 4px 28px rgba(67, 224, 151, 0.12);
+}
+
+[data-theme="light"] .card-global-match {
+  border-color: rgba(13, 144, 96, 0.50) !important;
+  box-shadow: 0 0 0 1px rgba(13, 144, 96, 0.18), 0 4px 20px rgba(13, 144, 96, 0.08);
+}
+
+/* =====================================================
+   SAVE / CANCEL – FIXED IN NAVBAR AREA
+   ===================================================== */
+.navbar-actions-fixed {
+  position: fixed;
+  top: 9px;
+  right: 20px;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@keyframes saveBoom {
+  0%   { transform: scale(1);    box-shadow: 0 0 0 0   rgba(67, 224, 151, 0); }
+  38%  { transform: scale(1.13); box-shadow: 0 0 0 5px rgba(67, 224, 151, 0.32); }
+  70%  { transform: scale(0.96); box-shadow: 0 0 0 8px rgba(67, 224, 151, 0); }
+  100% { transform: scale(1);    box-shadow: 0 0 0 0   rgba(67, 224, 151, 0); }
+}
+
+.save-boom {
+  animation: saveBoom 0.32s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+/* =====================================================
+   RULE ROW – CLICK TO EDIT
+   ===================================================== */
+.rule-row-clickable { cursor: pointer; }
 
 /* =====================================================
    RULE INLINE EDIT
@@ -649,11 +822,6 @@ a:hover { text-decoration: underline; }
 }
 
 /* Editing row state */
-.rule-row.editing {
-  background: rgba(0, 120, 212, 0.04);
-  border: 1px solid rgba(0, 120, 212, 0.14);
-  border-radius: var(--radius-sm);
-}
 .rule-row.editing .rule-row-actions { opacity: 1; }
 
 /* Match indicators */
@@ -821,6 +989,9 @@ select.input option { background: #1a1a24; color: var(--text); }
 .btn-primary { background: var(--accent-1); color: #fff; border-color: var(--accent-1); }
 .btn-primary:hover:not(:disabled) { background: #1a8de0; }
 
+.btn-accent { background: var(--accent-3); color: #0a1a12; border-color: var(--accent-3); font-weight: 600; }
+.btn-accent:hover:not(:disabled) { filter: brightness(1.08); }
+
 .btn-secondary { background: var(--surface-active); color: var(--text-secondary); border-color: var(--border); }
 .btn-secondary:hover:not(:disabled) { background: var(--surface-hover); color: var(--text); }
 
@@ -877,15 +1048,14 @@ select.input option { background: #1a1a24; color: var(--text); }
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.shortcut-card { animation: fadeUp 0.3s ease both; }
+.shortcut-card-wrap { animation: fadeUp 0.3s ease both; }
 
 /* =====================================================
    MOBILE
    ===================================================== */
 @media (max-width: 600px) {
   .admin-page { padding: 16px 14px 88px; }
-  .rule-form-row { grid-template-columns: 1fr 28px; }
-  .rule-form-row > *:nth-child(2),
-  .rule-form-row > *:nth-child(3) { display: none; }
+  .rule-form-row { grid-template-columns: 1fr; }
+  .rule-form-row > *:nth-child(2) { display: none; }
   .page-footer-fixed { right: 14px; bottom: 14px; }
 }

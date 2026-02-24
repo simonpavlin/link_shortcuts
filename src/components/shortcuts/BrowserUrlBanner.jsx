@@ -20,7 +20,7 @@ export const BrowserUrlBanner = ({ shortcutKey }) => {
       title={url}
     >
       {copied ? <IconCheck /> : <IconLink />}
-      {copied ? 'copied' : 'browser url'}
+      {copied ? 'Copied' : 'Browser URL'}
     </button>
   )
 }
