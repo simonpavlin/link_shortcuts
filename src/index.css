@@ -22,6 +22,7 @@
   --text-label: rgba(255, 255, 255, 0.22);
 
   --accent-1: #0078d4;
+  --accent-1-rgb: 0, 120, 212;   /* updated per module */
   --accent-3: #43e097;
   --danger:   #f87171;
 
@@ -34,6 +35,14 @@
   --radius-sm: 6px;
   --t: 0.14s ease;
 }
+
+/* =====================================================
+   PER-MODULE ACCENT COLOURS
+   Each module sets --accent-1 + --accent-1-rgb on its root element.
+   All rgba(var(--accent-1-rgb), α) calls below pick it up automatically.
+   ===================================================== */
+.module-shortcuts { --accent-1: #0078d4; --accent-1-rgb: 0, 120, 212; }
+.module-lookup    { --accent-1: #7c3aed; --accent-1-rgb: 124, 58, 237; }
 
 /* =====================================================
    LIGHT MODE OVERRIDES
@@ -100,8 +109,8 @@
   color: #1a1a2e;
 }
 [data-theme="light"] .rule-input-pattern:focus {
-  background: rgba(0, 120, 212, 0.06);
-  border-color: rgba(0, 120, 212, 0.50);
+  background: rgba(var(--accent-1-rgb), 0.06);
+  border-color: rgba(var(--accent-1-rgb), 0.50);
 }
 
 /* Standard input */
@@ -122,8 +131,8 @@
 
 /* Shortcut key badge – keep blue tint but darken border */
 [data-theme="light"] .shortcut-key-badge {
-  background: #dceeff;
-  border-color: #a8cef0;
+  background: rgba(var(--accent-1-rgb), 0.12);
+  border-color: rgba(var(--accent-1-rgb), 0.40);
 }
 
 /* =====================================================
@@ -155,7 +164,7 @@ a:hover { text-decoration: underline; }
   flex-direction: column;
   overflow: hidden;
   background-image:
-    radial-gradient(ellipse 80% 40% at 15% -5%, rgba(0, 120, 212, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 40% at 15% -5%, rgba(var(--accent-1-rgb), 0.08) 0%, transparent 60%),
     radial-gradient(ellipse 55% 28% at 85% 110%, rgba(67, 224, 151, 0.06) 0%, transparent 60%);
 }
 
@@ -329,7 +338,7 @@ a:hover { text-decoration: underline; }
   color: var(--text-secondary);
   background: transparent;
   border: none;
-  border-bottom: 1px solid rgba(0, 120, 212, 0.45);
+  border-bottom: 1px solid rgba(var(--accent-1-rgb), 0.45);
   border-radius: 0;
   outline: none;
   padding: 0 2px;
@@ -369,8 +378,8 @@ a:hover { text-decoration: underline; }
   font-size: 12px;
   font-weight: 500;
   color: var(--accent-1);
-  background: rgba(0, 120, 212, 0.14);
-  border: 1px solid rgba(0, 120, 212, 0.28);
+  background: rgba(var(--accent-1-rgb), 0.14);
+  border: 1px solid rgba(var(--accent-1-rgb), 0.28);
   padding: 2px 8px;
   border-radius: 4px;
   flex-shrink: 0;
@@ -402,8 +411,8 @@ a:hover { text-decoration: underline; }
   font-size: 12px;
   font-weight: 500;
   color: var(--accent-1);
-  background: rgba(0, 120, 212, 0.18);
-  border: 1px solid rgba(0, 120, 212, 0.50);
+  background: rgba(var(--accent-1-rgb), 0.18);
+  border: 1px solid rgba(var(--accent-1-rgb), 0.50);
   padding: 2px 8px;
   border-radius: 4px;
   outline: none;
@@ -418,8 +427,8 @@ a:hover { text-decoration: underline; }
   transition: background var(--t), border-color var(--t);
 }
 .shortcut-key-badge--editable:hover {
-  background: rgba(0, 120, 212, 0.22);
-  border-color: rgba(0, 120, 212, 0.45);
+  background: rgba(var(--accent-1-rgb), 0.22);
+  border-color: rgba(var(--accent-1-rgb), 0.45);
 }
 
 /* Inline name input – looks like plain text */
@@ -428,7 +437,7 @@ a:hover { text-decoration: underline; }
   color: var(--text-secondary);
   background: transparent;
   border: none;
-  border-bottom: 1px solid rgba(0, 120, 212, 0.45);
+  border-bottom: 1px solid rgba(var(--accent-1-rgb), 0.45);
   border-radius: 0;
   outline: none;
   padding: 0 2px;
@@ -630,14 +639,14 @@ a:hover { text-decoration: underline; }
 .preset-chip:hover { color: var(--text-secondary); border-color: var(--border-hover); background: var(--surface-hover); }
 .preset-chip.active {
   color: var(--accent-1);
-  background: rgba(0, 120, 212, 0.12);
-  border-color: rgba(0, 120, 212, 0.30);
+  background: rgba(var(--accent-1-rgb), 0.12);
+  border-color: rgba(var(--accent-1-rgb), 0.30);
 }
 
 /* Edit form wrapper (in place of a rule row) */
 .rule-edit-wrap {
-  background: rgba(0, 120, 212, 0.04);
-  border: 1px solid rgba(0, 120, 212, 0.14);
+  background: rgba(var(--accent-1-rgb), 0.04);
+  border: 1px solid rgba(var(--accent-1-rgb), 0.14);
   border-radius: var(--radius-sm);
   margin: 2px 6px;
 }
@@ -679,9 +688,9 @@ a:hover { text-decoration: underline; }
 }
 .global-test-input::placeholder { color: var(--text-label); }
 .global-test-input:focus {
-  border-color: rgba(0, 120, 212, 0.50);
-  background: rgba(0, 120, 212, 0.04);
-  box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.08);
+  border-color: rgba(var(--accent-1-rgb), 0.50);
+  background: rgba(var(--accent-1-rgb), 0.04);
+  box-shadow: 0 0 0 3px rgba(var(--accent-1-rgb), 0.08);
 }
 
 /* =====================================================
@@ -798,8 +807,8 @@ a:hover { text-decoration: underline; }
   transition: border-color var(--t), background var(--t);
 }
 .rule-input-pattern:focus {
-  border-color: rgba(0, 120, 212, 0.50);
-  background: rgba(0, 120, 212, 0.07);
+  border-color: rgba(var(--accent-1-rgb), 0.50);
+  background: rgba(var(--accent-1-rgb), 0.07);
 }
 
 /* URL input – looks like rule-url-text */
@@ -816,8 +825,8 @@ a:hover { text-decoration: underline; }
   transition: border-color var(--t), background var(--t), color var(--t);
 }
 .rule-input-url:focus {
-  border-color: rgba(0, 120, 212, 0.40);
-  background: rgba(0, 120, 212, 0.05);
+  border-color: rgba(var(--accent-1-rgb), 0.40);
+  background: rgba(var(--accent-1-rgb), 0.05);
   color: var(--text);
 }
 
@@ -937,8 +946,8 @@ a.rule-url-text:hover { text-decoration: underline; }
 .input::placeholder { color: rgba(255, 255, 255, 0.18); }
 .input:focus {
   outline: none;
-  border-color: rgba(0, 120, 212, 0.55);
-  background: rgba(0, 120, 212, 0.06);
+  border-color: rgba(var(--accent-1-rgb), 0.55);
+  background: rgba(var(--accent-1-rgb), 0.06);
 }
 select.input { cursor: pointer; }
 select.input option { background: #1a1a24; color: var(--text); }
@@ -952,8 +961,8 @@ select.input option { background: #1a1a24; color: var(--text); }
   height: 28px;
 }
 .input-ghost:focus {
-  background: rgba(0, 120, 212, 0.06);
-  border-color: rgba(0, 120, 212, 0.45);
+  background: rgba(var(--accent-1-rgb), 0.06);
+  border-color: rgba(var(--accent-1-rgb), 0.45);
 }
 .input-ghost::placeholder { color: rgba(255, 255, 255, 0.14); }
 
@@ -987,7 +996,7 @@ select.input option { background: #1a1a24; color: var(--text); }
 .btn-md { font-size: 12px; padding: 6px 14px; }
 
 .btn-primary { background: var(--accent-1); color: #fff; border-color: var(--accent-1); }
-.btn-primary:hover:not(:disabled) { background: #1a8de0; }
+.btn-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--accent-1) 85%, white); }
 
 .btn-accent { background: var(--accent-3); color: #0a1a12; border-color: var(--accent-3); font-weight: 600; }
 .btn-accent:hover:not(:disabled) { filter: brightness(1.08); }
@@ -1111,8 +1120,8 @@ select.input option { background: #1a1a24; color: var(--text); }
   transition: border-color var(--t), background var(--t);
 }
 .tag-input-box:focus-within {
-  border-color: rgba(0, 120, 212, 0.55);
-  background: rgba(0, 120, 212, 0.06);
+  border-color: rgba(var(--accent-1-rgb), 0.55);
+  background: rgba(var(--accent-1-rgb), 0.06);
 }
 
 [data-theme="light"] .tag-input-box {
@@ -1120,8 +1129,8 @@ select.input option { background: #1a1a24; color: var(--text); }
   border-color: #c8c8d4;
 }
 [data-theme="light"] .tag-input-box:focus-within {
-  border-color: rgba(0, 120, 212, 0.50);
-  background: rgba(0, 120, 212, 0.05);
+  border-color: rgba(var(--accent-1-rgb), 0.50);
+  background: rgba(var(--accent-1-rgb), 0.05);
 }
 
 .tag-input-field {
@@ -1240,8 +1249,8 @@ select.input option { background: #1a1a24; color: var(--text); }
   display: flex;
   flex-direction: column;
   gap: 7px;
-  background: rgba(0, 120, 212, 0.04);
-  border: 1px solid rgba(0, 120, 212, 0.14);
+  background: rgba(var(--accent-1-rgb), 0.04);
+  border: 1px solid rgba(var(--accent-1-rgb), 0.14);
   border-radius: var(--radius-sm);
   margin: 4px 8px;
 }
@@ -1252,6 +1261,13 @@ select.input option { background: #1a1a24; color: var(--text); }
   flex-direction: column;
   gap: 7px;
   border-top: 1px solid var(--border);
+}
+
+.lookup-no-matches {
+  padding: 10px 14px;
+  font-size: 11px;
+  color: var(--text-label);
+  letter-spacing: 0.04em;
 }
 
 .lookup-add-entry-btn {

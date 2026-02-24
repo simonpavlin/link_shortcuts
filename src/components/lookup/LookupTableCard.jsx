@@ -10,6 +10,8 @@ const buildLookupUrl = (tableKey) =>
 export const LookupTableCard = ({
   table,
   animationDelay,
+  testKey,
+  testTags,
   onUpdate,
   onDelete,
   onAddEntry,
@@ -30,6 +32,12 @@ export const LookupTableCard = ({
   const [copied, setCopied] = useState(false)
 
   const allTags = getAllTagsForTable(table)
+
+  // ── Test / filter ─────────────────────────────────────────────────────────
+  const isTestMatch = testKey === table.key && testTags.length > 0
+  const displayEntries = isTestMatch
+    ? table.entries.filter((e) => testTags.every((tag) => e.tags.includes(tag)))
+    : table.entries
 
   // ── Key edit ─────────────────────────────────────────────────────────────
   const startKey = () => {
@@ -129,7 +137,7 @@ export const LookupTableCard = ({
         )}
       </div>
 
-      <div className="shortcut-card">
+      <div className={`shortcut-card${isTestMatch ? ' card-global-match' : ''}`}>
         <div className="shortcut-card-header">
           {editingKey ? (
             <input
@@ -176,17 +184,21 @@ export const LookupTableCard = ({
         </div>
 
         {/* Entry list */}
-        {table.entries.length > 0 && (
+        {(displayEntries.length > 0 || (isTestMatch && table.entries.length > 0)) && (
           <div className="lookup-entry-list">
-            {table.entries.map((entry) => (
-              <LookupEntryRow
-                key={entry.id}
-                entry={entry}
-                allTags={allTags}
-                onUpdate={(entryId, data) => onUpdateEntry(table.id, entryId, data)}
-                onDelete={(entryId) => onDeleteEntry(table.id, entryId)}
-              />
-            ))}
+            {displayEntries.length > 0 ? (
+              displayEntries.map((entry) => (
+                <LookupEntryRow
+                  key={entry.id}
+                  entry={entry}
+                  allTags={allTags}
+                  onUpdate={(entryId, data) => onUpdateEntry(table.id, entryId, data)}
+                  onDelete={(entryId) => onDeleteEntry(table.id, entryId)}
+                />
+              ))
+            ) : (
+              <div className="lookup-no-matches">No entries match these tags.</div>
+            )}
           </div>
         )}
 

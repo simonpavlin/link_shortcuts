@@ -9,7 +9,8 @@ import {
   deleteEntry,
 } from '../../utils/lookup.utils'
 import { LookupTableCard } from './LookupTableCard'
-import { IconPlus } from '../shared/icons'
+import { DataPorter } from '../shared/DataPorter'
+import { IconPlus, IconX } from '../shared/icons'
 
 const STORAGE_KEY = 'linker_lookup'
 const INITIAL = { tables: [] }
@@ -18,9 +19,15 @@ export const LookupAdminView = () => {
   const [data, setData] = useLocalStorage(STORAGE_KEY, INITIAL)
   const [addingNew, setAddingNew] = useState(false)
   const [newForm, setNewForm] = useState({ key: '', name: '' })
+  const [testInput, setTestInput] = useState('')
 
   const { tables } = data
   const mutate = (newTables) => setData({ tables: newTables })
+
+  // Parse test input: first word = table key, rest = tags
+  const spaceIdx = testInput.indexOf(' ')
+  const testKey = spaceIdx === -1 ? (testInput.trim() || null) : (testInput.slice(0, spaceIdx) || null)
+  const testTags = spaceIdx === -1 ? [] : testInput.slice(spaceIdx + 1).split(' ').filter(Boolean)
 
   const handleAdd = () => {
     if (!newForm.key.trim()) return
@@ -36,7 +43,7 @@ export const LookupAdminView = () => {
   }
 
   return (
-    <div className="admin-page">
+    <div className="admin-page module-lookup">
       <div className="page-hero">
         <div className="page-hero-eyebrow">
           <span className="page-hero-line" />
@@ -52,6 +59,22 @@ export const LookupAdminView = () => {
         </p>
       </div>
 
+      {/* Global test field */}
+      <div className="global-test-wrap">
+        <input
+          className="global-test-input"
+          value={testInput}
+          onChange={(e) => setTestInput(e.target.value)}
+          placeholder="Test: projects react typescript"
+          spellCheck={false}
+        />
+        {testInput && (
+          <button className="icon-btn" onClick={() => setTestInput('')} title="Clear">
+            <IconX />
+          </button>
+        )}
+      </div>
+
       <div className="shortcuts-stack">
         {tables.length === 0 && !addingNew && (
           <p className="empty-hint">No tables yet — add one below.</p>
@@ -62,6 +85,8 @@ export const LookupAdminView = () => {
             key={t.id}
             table={t}
             animationDelay={i * 0.07}
+            testKey={testKey}
+            testTags={testTags}
             onUpdate={(id, data) => mutate(updateTable(tables, id, data))}
             onDelete={(id) => mutate(deleteTable(tables, id))}
             onAddEntry={(tableId, entryData) => mutate(addEntry(tables, tableId, entryData))}
@@ -107,6 +132,15 @@ export const LookupAdminView = () => {
             <IconPlus /> Add table
           </button>
         )}
+      </div>
+
+      <div className="page-footer-fixed">
+        <DataPorter
+          data={tables}
+          dataKey="tables"
+          filename="linker-lookup.json"
+          onImport={(newTables) => mutate(newTables)}
+        />
       </div>
     </div>
   )

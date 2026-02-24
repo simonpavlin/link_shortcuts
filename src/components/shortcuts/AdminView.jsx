@@ -92,7 +92,7 @@ export const AdminView = ({ prefillCommand, prefillParam }) => {
   }
 
   return (
-    <div className="admin-page">
+    <div className="admin-page module-shortcuts">
 
       {/* Save / Cancel – fixed in navbar area; Save always visible */}
       <div className="navbar-actions-fixed">

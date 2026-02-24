@@ -3,7 +3,7 @@ import { TagBadge } from './TagBadge'
 import { IconArrowRight } from '../shared/icons'
 
 export const LookupPickerView = ({ table, entries, tags }) => (
-  <div className="lookup-picker-page">
+  <div className="lookup-picker-page module-lookup">
     <div className="lookup-picker-header">
       <div className="page-hero-eyebrow">
         <span className="page-hero-line" />
