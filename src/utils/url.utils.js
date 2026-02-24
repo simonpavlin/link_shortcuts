@@ -27,3 +27,14 @@ export function parseSearchParams(searchParams) {
 export function buildBrowserUrl(origin, shortcutKey) {
   return `${origin}/shortcuts/?param=${encodeURIComponent(shortcutKey)}+%s`
 }
+
+/**
+ * Builds the lookup browser URL for a given table key.
+ * Format: ?param=TABLE_KEY+%s  — user types space-separated tags in place of %s.
+ * @param {string} origin  e.g. "https://linker.pavlin.dev"
+ * @param {string} tableKey
+ * @returns {string}
+ */
+export function buildLookupUrl(origin, tableKey) {
+  return `${origin}/lookup/?param=${encodeURIComponent(tableKey)}+%s`
+}

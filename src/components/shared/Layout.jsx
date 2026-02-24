@@ -24,6 +24,12 @@ export const Layout = ({ children }) => {
             >
               Shortcuts
             </NavLink>
+            <NavLink
+              to="/lookup/"
+              className={({ isActive }) => 'nav-link' + (isActive ? ' active' : '')}
+            >
+              Lookup
+            </NavLink>
           </nav>
           <div style={{ flex: 1 }} />
           <button

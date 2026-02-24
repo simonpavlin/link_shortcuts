@@ -1051,6 +1051,333 @@ select.input option { background: #1a1a24; color: var(--text); }
 .shortcut-card-wrap { animation: fadeUp 0.3s ease both; }
 
 /* =====================================================
+   TAG BADGE
+   ===================================================== */
+.tag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: hsl(var(--tag-hue) 45% 18%);
+  border: 1px solid hsl(var(--tag-hue) 52% 30%);
+  color: hsl(var(--tag-hue) 80% 78%);
+  white-space: nowrap;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
+[data-theme="light"] .tag-badge {
+  background: hsl(var(--tag-hue) 65% 92%);
+  border-color: hsl(var(--tag-hue) 50% 72%);
+  color: hsl(var(--tag-hue) 55% 28%);
+}
+
+.tag-badge-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  color: inherit;
+  opacity: 0.55;
+  padding: 0 0 0 1px;
+  display: flex;
+  align-items: center;
+  transition: opacity var(--t);
+}
+.tag-badge-remove:hover { opacity: 1; }
+
+/* =====================================================
+   TAG INPUT
+   ===================================================== */
+.tag-input-wrap {
+  position: relative;
+}
+
+.tag-input-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: var(--radius-sm);
+  padding: 4px 6px;
+  min-height: 32px;
+  cursor: text;
+  transition: border-color var(--t), background var(--t);
+}
+.tag-input-box:focus-within {
+  border-color: rgba(0, 120, 212, 0.55);
+  background: rgba(0, 120, 212, 0.06);
+}
+
+[data-theme="light"] .tag-input-box {
+  background: #f2f2f6;
+  border-color: #c8c8d4;
+}
+[data-theme="light"] .tag-input-box:focus-within {
+  border-color: rgba(0, 120, 212, 0.50);
+  background: rgba(0, 120, 212, 0.05);
+}
+
+.tag-input-field {
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  flex: 1;
+  min-width: 80px;
+  padding: 0;
+}
+.tag-input-field::placeholder { color: rgba(255, 255, 255, 0.20); }
+
+[data-theme="light"] .tag-input-field::placeholder { color: #a0a0b0; }
+
+.tag-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #16161e;
+  border: 1px solid var(--border-hover);
+  border-radius: var(--radius-sm);
+  z-index: 100;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="light"] .tag-dropdown {
+  background: #ffffff;
+  border-color: #c0c0cc;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.tag-dropdown-item {
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background var(--t);
+}
+.tag-dropdown-item:hover { background: var(--surface-hover); }
+
+/* =====================================================
+   LOOKUP ENTRY LIST
+   ===================================================== */
+.lookup-entry-list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border);
+}
+
+.lookup-entry-row {
+  display: grid;
+  grid-template-columns: 2fr 3fr 3fr 28px;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background var(--t);
+}
+.lookup-entry-row:last-child { border-bottom: none; }
+.lookup-entry-row:hover { background: var(--surface-hover); }
+
+.lookup-entry-desc {
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lookup-entry-ghost {
+  color: var(--text-label);
+  font-style: italic;
+}
+
+.lookup-entry-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.lookup-entry-url {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: color var(--t);
+}
+.lookup-entry-url:hover { color: var(--accent-1); text-decoration: underline; }
+
+.lookup-entry-actions {
+  display: flex;
+  justify-content: flex-end;
+  opacity: 0;
+  transition: opacity var(--t);
+}
+.lookup-entry-row:hover .lookup-entry-actions { opacity: 1; }
+
+/* =====================================================
+   LOOKUP ENTRY EDIT / ADD FORMS
+   ===================================================== */
+.lookup-entry-edit {
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  background: rgba(0, 120, 212, 0.04);
+  border: 1px solid rgba(0, 120, 212, 0.14);
+  border-radius: var(--radius-sm);
+  margin: 4px 8px;
+}
+
+.lookup-add-entry-form {
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  border-top: 1px solid var(--border);
+}
+
+.lookup-add-entry-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px;
+  background: none;
+  border: none;
+  border-top: 1px dashed rgba(255, 255, 255, 0.07);
+  color: var(--text-label);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+  transition: color var(--t), background var(--t);
+}
+.lookup-add-entry-btn:hover {
+  color: var(--text-muted);
+  background: var(--surface-hover);
+}
+
+[data-theme="light"] .lookup-add-entry-btn {
+  border-top-color: #d0d0d8;
+}
+
+/* =====================================================
+   LOOKUP PICKER VIEW (redirect → multiple matches)
+   ===================================================== */
+.lookup-picker-page {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 44px 20px 88px;
+}
+
+.lookup-picker-header {
+  margin-bottom: 32px;
+  animation: fadeUp 0.35s ease both;
+}
+
+.lookup-picker-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.lookup-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.lookup-picker-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-decoration: none;
+  animation: fadeUp 0.25s ease both;
+  transition: border-color var(--t), background var(--t), box-shadow var(--t);
+}
+.lookup-picker-item:hover {
+  border-color: var(--border-hover);
+  background: var(--surface-hover);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.18);
+  text-decoration: none;
+}
+
+.lookup-picker-item-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lookup-picker-item-desc {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.lookup-picker-item-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.lookup-picker-item-url {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+  flex-shrink: 0;
+}
+
+.lookup-picker-item-arrow {
+  color: var(--text-label);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  transition: color var(--t), transform var(--t);
+}
+.lookup-picker-item:hover .lookup-picker-item-arrow {
+  color: var(--accent-1);
+  transform: translateX(3px);
+}
+
+.lookup-picker-back {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-decoration: none;
+  letter-spacing: 0.03em;
+}
+.lookup-picker-back:hover { color: var(--text); text-decoration: underline; }
+
+/* =====================================================
    MOBILE
    ===================================================== */
 @media (max-width: 600px) {
@@ -1058,4 +1385,16 @@ select.input option { background: #1a1a24; color: var(--text); }
   .rule-form-row { grid-template-columns: 1fr; }
   .rule-form-row > *:nth-child(2) { display: none; }
   .page-footer-fixed { right: 14px; bottom: 14px; }
+
+  .lookup-entry-row {
+    grid-template-columns: 1fr 28px;
+    grid-template-rows: auto auto auto;
+  }
+  .lookup-entry-desc { grid-column: 1; grid-row: 1; }
+  .lookup-entry-actions { grid-column: 2; grid-row: 1; opacity: 1; }
+  .lookup-entry-tags { grid-column: 1 / -1; grid-row: 2; }
+  .lookup-entry-url { grid-column: 1 / -1; grid-row: 3; }
+
+  .lookup-picker-item { flex-wrap: wrap; }
+  .lookup-picker-item-url { max-width: 100%; }
 }
