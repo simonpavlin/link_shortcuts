@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { evaluateRules } from '../../utils/shortcuts.utils'
 import { RuleList } from './RuleList'
 import { BrowserUrlBanner } from './BrowserUrlBanner'
-import { IconLock, IconLockOpen, IconTrash, IconMoreDots, IconCopy } from '../shared/icons'
+import { IconLock, IconLockOpen, IconTrash, IconMoreDots, IconCopy, IconX } from '../shared/icons'
 
 // ── 3-dot menu with duplicate + delete confirmation ───────────────────────────
 const MoreMenu = ({ onDuplicate, onDelete }) => {
@@ -149,11 +149,21 @@ export const ShortcutCard = ({
   const isGlobalMatch = globalCommand === shortcut.key && !!globalParam
   const activeTestParam = testParam || (isGlobalMatch ? (globalParam ?? '') : '')
 
-  const testResults = activeTestParam.length > 0
+  const allResults = activeTestParam.length > 0
+    ? evaluateRules(shortcut.rules, activeTestParam)
+    : null
+  const firstMatchIdx = allResults ? allResults.findIndex((r) => r.matched) : -1
+  const testResults = allResults
     ? Object.fromEntries(
-        evaluateRules(shortcut.rules, activeTestParam).map((r) => [r.rule.id, r])
+        allResults.map((r, idx) => [
+          r.rule.id,
+          idx === firstMatchIdx
+            ? r
+            : { ...r, matched: false, skipped: firstMatchIdx >= 0 && idx > firstMatchIdx },
+        ])
       )
     : null
+  const hasNoMatch = allResults !== null && firstMatchIdx === -1
 
   return (
     <div
@@ -252,6 +262,7 @@ export const ShortcutCard = ({
         <RuleList
           rules={shortcut.rules}
           testResults={testResults}
+          testParam={activeTestParam}
           locked={locked}
           onLockedClick={flashLock}
           onReorder={(newRules) => onReorderRules(shortcut.id, newRules)}
@@ -259,6 +270,12 @@ export const ShortcutCard = ({
           onUpdate={(ruleId, ruleData) => onUpdateRule(shortcut.id, ruleId, ruleData)}
           onDelete={(ruleId) => onDeleteRule(shortcut.id, ruleId)}
         />
+        {hasNoMatch && (
+          <div className="test-no-match">
+            <IconX />
+            No rule matched
+          </div>
+        )}
       </div>
     </div>
   )

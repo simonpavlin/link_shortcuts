@@ -1107,8 +1107,30 @@ a:hover { text-decoration: underline; }
 .rule-row.editing .rule-row-actions { opacity: 1; }
 
 /* Match indicators */
-.rule-match-yes { color: var(--accent-3); display: flex; align-items: center; }
-.rule-match-no  { color: var(--text-label); display: flex; align-items: center; }
+@keyframes matchReveal {
+  from { opacity: 0; transform: scale(0.45); }
+  to   { transform: scale(1); }
+}
+.rule-match-yes, .rule-match-no, .rule-match-skip {
+  display: flex;
+  align-items: center;
+  animation: matchReveal 0.16s ease backwards;
+}
+.rule-match-yes  { color: var(--accent-3); }
+.rule-match-no   { color: var(--danger); opacity: 0.65; }
+.rule-match-skip { color: var(--text-label); opacity: 0.40; }
+
+/* No-match banner */
+.test-no-match {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--danger);
+  opacity: 0.75;
+}
 
 /* Matched URL shown as link in url column */
 .rule-url-text.matched { color: var(--accent-3); }

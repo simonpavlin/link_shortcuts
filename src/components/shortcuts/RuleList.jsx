@@ -126,6 +126,7 @@ const PendingRows = ({ onAdd }) => {
 export const RuleList = ({
   rules,
   testResults,
+  testParam,
   locked,
   onLockedClick,
   onReorder,
@@ -155,11 +156,13 @@ export const RuleList = ({
     <div className="rule-table">
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
-          {rules.map((rule) => (
+          {rules.map((rule, idx) => (
             <RuleRow
               key={rule.id}
               rule={rule}
               matchResult={testResults ? (testResults[rule.id] ?? null) : null}
+              testParam={testParam}
+              testIndex={idx}
               locked={locked}
               onLockedClick={onLockedClick}
               isEditing={editingId === rule.id}

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { PATTERN_TYPES } from '../../utils/shortcuts.utils'
-import { IconDrag, IconTrash, IconArrowRight, IconCheck, IconMinus, IconChevronDown } from '../shared/icons'
+import { IconDrag, IconTrash, IconArrowRight, IconCheck, IconX, IconMinus, IconChevronDown } from '../shared/icons'
 
 const PRESET_OPTIONS = ['number', 'string', 'url', 'const', 'regex']
 
@@ -110,6 +110,8 @@ export const PatternField = ({ patternType, pattern, onChange, onKeyDown, autoFo
 export const RuleRow = ({
   rule,
   matchResult,
+  testParam,
+  testIndex,
   locked,
   onLockedClick,
   isEditing,
@@ -198,13 +200,17 @@ export const RuleRow = ({
     onDelete()
   }
 
-  // First col: editing → empty, testing → ✓/✗, default → drag handle
+  // First col: editing → empty, testing → ✓/✗/–, default → drag handle
   const firstCol = () => {
     if (isEditing) return <span />
     if (matchResult !== null) {
-      return matchResult.matched
-        ? <span className="rule-match-yes"><IconCheck /></span>
-        : <span className="rule-match-no"><IconMinus /></span>
+      const delay = { animationDelay: `${testIndex * 0.07}s` }
+      const animKey = `${testParam}-${rule.id}`
+      if (matchResult.matched)
+        return <span key={animKey} className="rule-match-yes" style={delay}><IconCheck /></span>
+      if (matchResult.skipped)
+        return <span key={animKey} className="rule-match-skip" style={delay}><IconMinus /></span>
+      return <span key={animKey} className="rule-match-no" style={delay}><IconX /></span>
     }
     return (
       <span
