@@ -1,15 +1,99 @@
-import { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { PATTERN_TYPES } from '../../utils/shortcuts.utils'
-import { IconDrag, IconTrash, IconArrowRight, IconCheck, IconMinus } from '../shared/icons'
+import { IconDrag, IconTrash, IconArrowRight, IconCheck, IconMinus, IconChevronDown } from '../shared/icons'
 
-const PRESET_PATTERNS = {
-  '^\\d+$': { patternType: 'is-number', label: PATTERN_TYPES['is-number'].label },
-  '^\\w+$': { patternType: 'is-word',   label: PATTERN_TYPES['is-word'].label },
-  '.*':     { patternType: 'is-any',    label: PATTERN_TYPES['is-any'].label },
+const PRESET_OPTIONS = ['number', 'string', 'url', 'const', 'regex']
+
+// ── PatternField ──────────────────────────────────────────────────────────────
+// Dropdown for preset types; switches to text field for 'const' and 'regex'.
+export const PatternField = ({ patternType, pattern, onChange, onKeyDown, autoFocus }) => {
+  const [open, setOpen] = useState(false)
+  const dropRef = useRef(null)
+
+  // Backward-compat: old stored patternTypes fall back to 'regex' display
+  const effectiveType = PATTERN_TYPES[patternType] ? patternType : 'regex'
+  const isCustom = effectiveType === 'const' || effectiveType === 'regex'
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e) => {
+      if (!dropRef.current?.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  const handleTypeSelect = (type) => {
+    setOpen(false)
+    if (type === 'const' || type === 'regex') {
+      onChange({ patternType: type, pattern: '' })
+    } else {
+      onChange({ patternType: type, pattern: PATTERN_TYPES[type].pattern })
+    }
+  }
+
+  const menu = (
+    <div className="pattern-dropdown-menu">
+      {PRESET_OPTIONS.map((t) => (
+        <button
+          key={t}
+          type="button"
+          className={`pattern-dropdown-item${t === effectiveType ? ' active' : ''}`}
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => handleTypeSelect(t)}
+        >
+          {PATTERN_TYPES[t].label}
+        </button>
+      ))}
+    </div>
+  )
+
+  if (isCustom) {
+    return (
+      <div ref={dropRef} className="pattern-field-wrap pattern-field-custom">
+        <input
+          className="rule-input-pattern"
+          value={pattern}
+          onChange={(e) => onChange({ patternType: effectiveType, pattern: e.target.value })}
+          onKeyDown={onKeyDown}
+          placeholder={effectiveType === 'const' ? 'exact value…' : 'regex…'}
+          autoFocus={autoFocus}
+        />
+        <button
+          type="button"
+          className="pattern-type-chevron"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => setOpen((o) => !o)}
+          title="Change type"
+        >
+          <IconChevronDown />
+        </button>
+        {open && menu}
+      </div>
+    )
+  }
+
+  const presetPattern = PATTERN_TYPES[effectiveType]?.pattern ?? ''
+
+  return (
+    <div ref={dropRef} className="pattern-field-wrap pattern-field-preset">
+      <button
+        type="button"
+        className="pattern-type-badge"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <span className="pattern-badge-label">{PATTERN_TYPES[effectiveType]?.label ?? effectiveType}</span>
+        {presetPattern && <span className="pattern-badge-regex">{presetPattern}</span>}
+        <IconChevronDown />
+      </button>
+      {open && menu}
+    </div>
+  )
 }
 
-export const RuleRow = forwardRef(({
+// ── RuleRow ───────────────────────────────────────────────────────────────────
+export const RuleRow = ({
   rule,
   matchResult,
   locked,
@@ -19,25 +103,33 @@ export const RuleRow = forwardRef(({
   onSave,
   onCancel,
   onDelete,
-}, ref) => {
-  const [editPattern, setEditPattern] = useState(rule.pattern)
-  const [editUrl, setEditUrl] = useState(rule.url)
+}) => {
+  const [editPatternType, setEditPatternType] = useState(rule.patternType ?? 'regex')
+  const [editPattern, setEditPattern]         = useState(rule.pattern)
+  const [editUrl, setEditUrl]                 = useState(rule.url)
+  const [confirmDelete, setConfirmDelete]     = useState(false)
 
-  // Refs so the imperative save() never reads stale closure values
-  const editPatternRef = useRef(rule.pattern)
-  const editUrlRef = useRef(rule.url)
-  const onSaveRef = useRef(onSave)
+  // Refs so doSave never reads stale closure values
+  const editPatternTypeRef = useRef(rule.patternType ?? 'regex')
+  const editPatternRef     = useRef(rule.pattern)
+  const editUrlRef         = useRef(rule.url)
+  const onSaveRef          = useRef(onSave)
+  const cancelledRef       = useRef(false)
   useEffect(() => { onSaveRef.current = onSave }, [onSave])
 
   // Sync edit state when editing starts
   useEffect(() => {
     if (isEditing) {
+      const pt = rule.patternType ?? 'regex'
+      setEditPatternType(pt)
       setEditPattern(rule.pattern)
       setEditUrl(rule.url)
+      editPatternTypeRef.current = pt
       editPatternRef.current = rule.pattern
       editUrlRef.current = rule.url
+      cancelledRef.current = false
     }
-  }, [isEditing, rule.pattern, rule.url])
+  }, [isEditing, rule.patternType, rule.pattern, rule.url])
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: rule.id })
@@ -49,26 +141,35 @@ export const RuleRow = forwardRef(({
     zIndex: isDragging ? 1 : undefined,
   }
 
-  // Stable save function – reads from refs so it's safe to expose via imperative handle
   const doSave = useCallback(() => {
     if (!editUrlRef.current.trim()) return
-    const preset = PRESET_PATTERNS[editPatternRef.current]
     onSaveRef.current({
       pattern: editPatternRef.current,
       url: editUrlRef.current,
-      patternType: preset?.patternType ?? 'custom',
-      label: preset?.label ?? '',
+      patternType: editPatternTypeRef.current,
+      label: PATTERN_TYPES[editPatternTypeRef.current]?.label ?? '',
     })
   }, [])
 
-  useImperativeHandle(ref, () => ({ save: doSave }), [doSave])
+  const handlePatternChange = ({ patternType, pattern }) => {
+    setEditPatternType(patternType)
+    editPatternTypeRef.current = patternType
+    setEditPattern(pattern)
+    editPatternRef.current = pattern
+  }
 
-  const handlePatternChange = (v) => { setEditPattern(v); editPatternRef.current = v }
   const handleUrlChange = (v) => { setEditUrl(v); editUrlRef.current = v }
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') { e.preventDefault(); doSave() }
-    if (e.key === 'Escape') onCancel()
+    if (e.key === 'Escape') { cancelledRef.current = true; onCancel() }
+  }
+
+  // Auto-save when focus leaves the edit container entirely
+  const handleContainerBlur = (e) => {
+    if (e.currentTarget.contains(e.relatedTarget)) return
+    if (cancelledRef.current) { cancelledRef.current = false; return }
+    doSave()
   }
 
   const handleRowClick = () => {
@@ -104,19 +205,26 @@ export const RuleRow = forwardRef(({
     )
   }
 
-  // URL col: editing → input, matched → link, default → muted text
-  const urlCol = () => {
-    if (isEditing) {
+  // Pattern display in non-edit mode
+  const patternDisplay = () => {
+    const pt = rule.patternType
+    if (pt === 'const') {
+      return <span className="rule-pattern-text rule-pattern-const">&quot;{rule.pattern}&quot;</span>
+    }
+    const meta = PATTERN_TYPES[pt]
+    if (meta) {
       return (
-        <input
-          className="rule-input-url"
-          value={editUrl}
-          onChange={(e) => handleUrlChange(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="https://example.com/%s"
-        />
+        <span className="rule-pattern-text rule-pattern-preset">
+          <span className="pattern-badge-label">{meta.label}</span>
+          {meta.pattern && <span className="pattern-badge-regex">{meta.pattern}</span>}
+        </span>
       )
     }
+    return <span className="rule-pattern-text">{rule.pattern}</span>
+  }
+
+  // URL col in non-edit mode
+  const urlCol = () => {
     if (matchResult?.matched && matchResult.resultUrl) {
       return (
         <a
@@ -143,29 +251,56 @@ export const RuleRow = forwardRef(({
     >
       {firstCol()}
 
+      {/* Cols 2-4: a single wrapper div when editing so onBlur can cover all fields */}
       {isEditing ? (
-        <input
-          className="rule-input-pattern"
-          value={editPattern}
-          onChange={(e) => handlePatternChange(e.target.value)}
-          onKeyDown={handleKeyDown}
-          autoFocus
-        />
+        <div className="rule-edit-fields" onBlur={handleContainerBlur}>
+          <PatternField
+            patternType={editPatternType}
+            pattern={editPattern}
+            onChange={handlePatternChange}
+            onKeyDown={handleKeyDown}
+            autoFocus
+          />
+          <span className="rule-form-arrow"><IconArrowRight /></span>
+          <input
+            className="rule-input-url"
+            value={editUrl}
+            onChange={(e) => handleUrlChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="https://example.com/%s"
+          />
+        </div>
       ) : (
-        <span className="rule-pattern-text">{rule.pattern}</span>
+        <>
+          {patternDisplay()}
+          <span className="rule-arrow-icon"><IconArrowRight /></span>
+          {urlCol()}
+        </>
       )}
 
-      <span className="rule-arrow-icon"><IconArrowRight /></span>
-
-      {urlCol()}
-
-      <div className="rule-row-actions" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="rule-row-actions"
+        style={confirmDelete ? { opacity: 1 } : undefined}
+        onClick={(e) => e.stopPropagation()}
+      >
         {!isEditing && (
-          <button className="icon-btn danger" onClick={handleDelete} title="Delete"><IconTrash /></button>
+          confirmDelete ? (
+            <div className="confirm-delete-inline">
+              <span className="confirm-text">Delete?</span>
+              <button className="btn-yes" onClick={handleDelete}>Yes</button>
+              <button className="btn-no" onClick={(e) => { e.stopPropagation(); setConfirmDelete(false) }}>No</button>
+            </div>
+          ) : (
+            <button
+              className="icon-btn danger"
+              onClick={(e) => { e.stopPropagation(); setConfirmDelete(true) }}
+              title="Delete"
+            >
+              <IconTrash />
+            </button>
+          )
         )}
       </div>
     </div>
   )
-})
-
-RuleRow.displayName = 'RuleRow'
+}

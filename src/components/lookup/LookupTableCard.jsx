@@ -1,11 +1,68 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { getAllTagsForTable } from '../../utils/lookup.utils'
 import { LookupEntryRow } from './LookupEntryRow'
 import { TagInput } from './TagInput'
-import { IconTrash, IconPlus, IconLink } from '../shared/icons'
+import { IconPlus, IconLink, IconTrash, IconMoreDots, IconCopy } from '../shared/icons'
 
 const buildLookupUrl = (tableKey) =>
   `${window.location.origin}/lookup/?param=${encodeURIComponent(tableKey)}+%s`
+
+// ── 3-dot menu with duplicate + delete confirmation ───────────────────────────
+const MoreMenu = ({ onDuplicate, onDelete }) => {
+  const [open, setOpen] = useState(false)
+  const [confirming, setConfirming] = useState(false)
+  const menuRef = useRef(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e) => {
+      if (!menuRef.current?.contains(e.target)) {
+        setOpen(false)
+        setConfirming(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  return (
+    <div ref={menuRef} className="more-menu-wrap">
+      <button
+        className="icon-btn"
+        onClick={() => { setOpen((o) => !o); setConfirming(false) }}
+        title="More options"
+      >
+        <IconMoreDots />
+      </button>
+      {open && (
+        <div className="more-menu-dropdown">
+          <button
+            className="more-menu-item"
+            onClick={() => { onDuplicate(); setOpen(false) }}
+          >
+            <IconCopy /> Duplicate
+          </button>
+          {confirming ? (
+            <div className="more-menu-confirm">
+              <span>Delete?</span>
+              <button
+                className="btn-yes"
+                onClick={() => { onDelete(); setOpen(false); setConfirming(false) }}
+              >
+                Yes
+              </button>
+              <button className="btn-no" onClick={() => setConfirming(false)}>No</button>
+            </div>
+          ) : (
+            <button className="more-menu-item danger" onClick={() => setConfirming(true)}>
+              <IconTrash /> Delete
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export const LookupTableCard = ({
   table,
@@ -14,6 +71,7 @@ export const LookupTableCard = ({
   testTags,
   onUpdate,
   onDelete,
+  onDuplicate,
   onAddEntry,
   onUpdateEntry,
   onDeleteEntry,
@@ -173,13 +231,10 @@ export const LookupTableCard = ({
           <div style={{ flex: 1 }} />
 
           <div className="header-actions">
-            <button
-              className="icon-btn danger"
-              onClick={() => onDelete(table.id)}
-              title="Delete table"
-            >
-              <IconTrash />
-            </button>
+            <MoreMenu
+              onDuplicate={() => onDuplicate(table.id)}
+              onDelete={() => onDelete(table.id)}
+            />
           </div>
         </div>
 

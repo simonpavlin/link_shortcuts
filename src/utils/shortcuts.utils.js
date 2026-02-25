@@ -1,10 +1,11 @@
 import { v4 as uuidv4 } from 'uuid'
 
 export const PATTERN_TYPES = {
-  'is-number': { label: 'Is a number', pattern: '^\\d+$' },
-  'is-word': { label: 'Is a single word', pattern: '^\\w+$' },
-  'is-any': { label: 'Anything', pattern: '.*' },
-  'custom': { label: 'Custom regex', pattern: '' },
+  'number': { label: 'Number', pattern: '^\\d+$' },
+  'string': { label: 'Anything', pattern: '^.+$' },
+  'url':    { label: 'URL',    pattern: '^https?://' },
+  'const':  { label: 'Const',  pattern: null },
+  'regex':  { label: 'Regex',  pattern: null },
 }
 
 /**
@@ -18,8 +19,12 @@ export const evaluateRules = (rules, param) =>
     let matched = false
     let resultUrl = null
     try {
-      const regex = new RegExp(rule.pattern)
-      matched = regex.test(param)
+      if (rule.patternType === 'const') {
+        matched = param === rule.pattern
+      } else {
+        const regex = new RegExp(rule.pattern)
+        matched = regex.test(param)
+      }
       if (matched) {
         resultUrl = rule.url.replace('%s', encodeURIComponent(param))
       }
@@ -53,11 +58,14 @@ export const createShortcut = ({ key = '', name = '' } = {}) => ({
   rules: [],
 })
 
-export const createRule = ({ label = '', patternType = 'is-any', pattern = '', url = '' } = {}) => ({
+export const createRule = ({ label = '', patternType = 'number', pattern = '', url = '' } = {}) => ({
   id: uuidv4(),
   label,
   patternType,
-  pattern: patternType === 'custom' ? pattern : (PATTERN_TYPES[patternType]?.pattern ?? ''),
+  // preset types get their fixed pattern; const/regex use the provided pattern
+  pattern: (patternType === 'const' || patternType === 'regex')
+    ? pattern
+    : (PATTERN_TYPES[patternType]?.pattern ?? pattern),
   url,
 })
 
@@ -91,3 +99,16 @@ export const deleteRule = (shortcuts, shortcutId, ruleId) =>
 
 export const reorderRules = (shortcuts, shortcutId, newRules) =>
   shortcuts.map((s) => (s.id !== shortcutId ? s : { ...s, rules: newRules }))
+
+export const duplicateShortcut = (shortcuts, id) => {
+  const src = shortcuts.find((s) => s.id === id)
+  if (!src) return shortcuts
+  const copy = {
+    ...createShortcut({ key: `${src.key}-copy`, name: src.name ? `${src.name} (copy)` : '' }),
+    rules: src.rules.map((r) => ({ ...r, id: uuidv4() })),
+  }
+  const idx = shortcuts.findIndex((s) => s.id === id)
+  const result = [...shortcuts]
+  result.splice(idx + 1, 0, copy)
+  return result
+}

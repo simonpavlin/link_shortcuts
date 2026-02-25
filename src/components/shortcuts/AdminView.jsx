@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState } from 'react'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
 import {
   addShortcut,
@@ -8,6 +8,7 @@ import {
   updateRule,
   deleteRule,
   reorderRules,
+  duplicateShortcut,
 } from '../../utils/shortcuts.utils'
 import { ShortcutCard } from './ShortcutCard'
 import { ImportExport } from './ImportExport'
@@ -26,45 +27,6 @@ export const AdminView = ({ prefillCommand, prefillParam }) => {
     if (!prefillCommand) return ''
     return prefillParam ? `${prefillCommand} ${prefillParam}` : prefillCommand
   })
-
-  // Global save/cancel – collects functions from all cards that are currently editing
-  const activeCardSaves   = useRef(new Map()) // shortcutId → saveFn
-  const activeCardCancels = useRef(new Map()) // shortcutId → cancelFn
-  const [hasActiveEdit, setHasActiveEdit] = useState(false)
-  const [saveFlash, setSaveFlash] = useState(0)
-
-  const handleCardEditStart = useCallback((id, saveFn, cancelFn) => {
-    activeCardSaves.current.set(id, saveFn)
-    activeCardCancels.current.set(id, cancelFn)
-    setHasActiveEdit(true)
-  }, [])
-
-  const handleCardEditEnd = useCallback((id) => {
-    activeCardSaves.current.delete(id)
-    activeCardCancels.current.delete(id)
-    setHasActiveEdit(activeCardSaves.current.size > 0)
-  }, [])
-
-  const handleGlobalSave = useCallback(() => {
-    activeCardSaves.current.forEach((fn) => fn())
-    setSaveFlash((n) => n + 1)
-  }, [])
-
-  const handleGlobalCancel = useCallback(() => {
-    activeCardCancels.current.forEach((fn) => fn())
-  }, [])
-
-  // Ctrl+S / ⌘S anywhere on the page
-  useEffect(() => {
-    const handler = (e) => {
-      if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault()
-        if (hasActiveEdit) handleGlobalSave()
-      }
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [hasActiveEdit, handleGlobalSave])
 
   const { shortcuts } = data
   const mutate = (newShortcuts) => setData({ shortcuts: newShortcuts })
@@ -93,23 +55,6 @@ export const AdminView = ({ prefillCommand, prefillParam }) => {
 
   return (
     <div className="admin-page module-shortcuts">
-
-      {/* Save / Cancel – fixed in navbar area; Save always visible */}
-      <div className="navbar-actions-fixed">
-        {hasActiveEdit && (
-          <button className="btn btn-ghost btn-sm" onClick={handleGlobalCancel}>
-            Cancel
-          </button>
-        )}
-        <button
-          key={saveFlash}
-          className={`btn btn-accent btn-sm${saveFlash > 0 ? ' save-boom' : ''}`}
-          onClick={handleGlobalSave}
-          disabled={!hasActiveEdit}
-        >
-          Save
-        </button>
-      </div>
 
       <div className="page-hero">
         <div className="page-hero-eyebrow">
@@ -158,10 +103,9 @@ export const AdminView = ({ prefillCommand, prefillParam }) => {
             animationDelay={i * 0.07}
             globalCommand={globalCommand}
             globalParam={globalParam}
-            onEditStart={handleCardEditStart}
-            onEditEnd={handleCardEditEnd}
             onUpdate={(id, formData) => mutate(updateShortcut(shortcuts, id, formData))}
             onDelete={(id) => mutate(deleteShortcut(shortcuts, id))}
+            onDuplicate={(id) => mutate(duplicateShortcut(shortcuts, id))}
             onAddRule={(shortcutId, ruleData) => mutate(addRule(shortcuts, shortcutId, ruleData))}
             onUpdateRule={(shortcutId, ruleId, ruleData) =>
               mutate(updateRule(shortcuts, shortcutId, ruleId, ruleData))

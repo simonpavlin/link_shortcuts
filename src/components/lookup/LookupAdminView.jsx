@@ -4,6 +4,7 @@ import {
   addTable,
   updateTable,
   deleteTable,
+  duplicateTable,
   addEntry,
   updateEntry,
   deleteEntry,
@@ -89,6 +90,7 @@ export const LookupAdminView = () => {
             testTags={testTags}
             onUpdate={(id, data) => mutate(updateTable(tables, id, data))}
             onDelete={(id) => mutate(deleteTable(tables, id))}
+            onDuplicate={(id) => mutate(duplicateTable(tables, id))}
             onAddEntry={(tableId, entryData) => mutate(addEntry(tables, tableId, entryData))}
             onUpdateEntry={(tableId, entryId, entryData) =>
               mutate(updateEntry(tables, tableId, entryId, entryData))

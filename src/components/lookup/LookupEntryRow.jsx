@@ -1,32 +1,46 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { TagBadge } from './TagBadge'
 import { TagInput } from './TagInput'
-import { IconTrash, IconCheck } from '../shared/icons'
+import { IconTrash } from '../shared/icons'
 
 export const LookupEntryRow = ({ entry, allTags, onUpdate, onDelete }) => {
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const cancelledRef = useRef(false)
 
   const startEdit = () => {
     setForm({ description: entry.description, tags: [...entry.tags], url: entry.url })
     setEditing(true)
+    cancelledRef.current = false
   }
 
-  const commit = () => {
-    if (!form) return
-    onUpdate(entry.id, form)
+  const commit = (currentForm) => {
+    const f = currentForm ?? form
+    if (!f) return
+    onUpdate(entry.id, f)
     setEditing(false)
     setForm(null)
   }
 
   const cancel = () => {
+    cancelledRef.current = true
     setEditing(false)
     setForm(null)
   }
 
+  const handleContainerBlur = (e) => {
+    if (e.currentTarget.contains(e.relatedTarget)) return
+    if (cancelledRef.current) { cancelledRef.current = false; return }
+    commit(form)
+  }
+
   if (editing && form) {
     return (
-      <div className="lookup-entry-edit">
+      <div
+        className="lookup-entry-edit"
+        onBlur={handleContainerBlur}
+      >
         <input
           className="input"
           value={form.description}
@@ -45,16 +59,10 @@ export const LookupEntryRow = ({ entry, allTags, onUpdate, onDelete }) => {
           onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
           placeholder="https://…"
           onKeyDown={(e) => {
-            if (e.key === 'Enter') commit()
+            if (e.key === 'Enter') { cancelledRef.current = false; commit(form) }
             if (e.key === 'Escape') cancel()
           }}
         />
-        <div className="form-actions">
-          <button className="btn btn-ghost btn-sm" onClick={cancel}>Cancel</button>
-          <button className="btn btn-primary btn-sm" onClick={commit}>
-            <IconCheck /> Save
-          </button>
-        </div>
       </div>
     )
   }
@@ -76,14 +84,36 @@ export const LookupEntryRow = ({ entry, allTags, onUpdate, onDelete }) => {
       >
         {entry.url}
       </a>
-      <div className="lookup-entry-actions">
-        <button
-          className="icon-btn danger"
-          title="Delete entry"
-          onClick={(e) => { e.stopPropagation(); onDelete(entry.id) }}
-        >
-          <IconTrash />
-        </button>
+      <div
+        className="lookup-entry-actions"
+        style={confirmDelete ? { opacity: 1 } : undefined}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {confirmDelete ? (
+          <div className="confirm-delete-inline">
+            <span className="confirm-text">Delete?</span>
+            <button
+              className="btn-yes"
+              onClick={(e) => { e.stopPropagation(); onDelete(entry.id) }}
+            >
+              Yes
+            </button>
+            <button
+              className="btn-no"
+              onClick={(e) => { e.stopPropagation(); setConfirmDelete(false) }}
+            >
+              No
+            </button>
+          </div>
+        ) : (
+          <button
+            className="icon-btn danger"
+            title="Delete entry"
+            onClick={(e) => { e.stopPropagation(); setConfirmDelete(true) }}
+          >
+            <IconTrash />
+          </button>
+        )}
       </div>
     </div>
   )

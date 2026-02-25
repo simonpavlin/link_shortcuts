@@ -78,3 +78,16 @@ export const getAllTagsForTable = (table) => {
   }
   return [...set].sort()
 }
+
+export const duplicateTable = (tables, id) => {
+  const src = tables.find((t) => t.id === id)
+  if (!src) return tables
+  const copy = {
+    ...createTable({ key: `${src.key}-copy`, name: src.name ? `${src.name} (copy)` : '' }),
+    entries: src.entries.map((e) => ({ ...e, id: uuidv4() })),
+  }
+  const idx = tables.findIndex((t) => t.id === id)
+  const result = [...tables]
+  result.splice(idx + 1, 0, copy)
+  return result
+}

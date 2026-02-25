@@ -2,17 +2,73 @@ import { useState, useEffect, useRef } from 'react'
 import { evaluateRules } from '../../utils/shortcuts.utils'
 import { RuleList } from './RuleList'
 import { BrowserUrlBanner } from './BrowserUrlBanner'
-import { IconTrash, IconLock, IconLockOpen } from '../shared/icons'
+import { IconLock, IconLockOpen, IconTrash, IconMoreDots, IconCopy } from '../shared/icons'
+
+// ── 3-dot menu with duplicate + delete confirmation ───────────────────────────
+const MoreMenu = ({ onDuplicate, onDelete }) => {
+  const [open, setOpen] = useState(false)
+  const [confirming, setConfirming] = useState(false)
+  const menuRef = useRef(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e) => {
+      if (!menuRef.current?.contains(e.target)) {
+        setOpen(false)
+        setConfirming(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  return (
+    <div ref={menuRef} className="more-menu-wrap">
+      <button
+        className="icon-btn"
+        onClick={() => { setOpen((o) => !o); setConfirming(false) }}
+        title="More options"
+      >
+        <IconMoreDots />
+      </button>
+      {open && (
+        <div className="more-menu-dropdown">
+          <button
+            className="more-menu-item"
+            onClick={() => { onDuplicate(); setOpen(false) }}
+          >
+            <IconCopy /> Duplicate
+          </button>
+          {confirming ? (
+            <div className="more-menu-confirm">
+              <span>Delete?</span>
+              <button
+                className="btn-yes"
+                onClick={() => { onDelete(); setOpen(false); setConfirming(false) }}
+              >
+                Yes
+              </button>
+              <button className="btn-no" onClick={() => setConfirming(false)}>No</button>
+            </div>
+          ) : (
+            <button className="more-menu-item danger" onClick={() => setConfirming(true)}>
+              <IconTrash /> Delete
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export const ShortcutCard = ({
   shortcut,
   animationDelay,
   globalCommand,
   globalParam,
-  onEditStart,
-  onEditEnd,
   onUpdate,
   onDelete,
+  onDuplicate,
   onAddRule,
   onUpdateRule,
   onDeleteRule,
@@ -21,8 +77,6 @@ export const ShortcutCard = ({
   const [locked, setLocked] = useState(false)
   const [lockFlash, setLockFlash] = useState(0)
   const [testParam, setTestParam] = useState('')
-  const [isRuleEditing, setIsRuleEditing] = useState(false)
-  const ruleListRef = useRef(null)
 
   // Inline key editing
   const [editingKey, setEditingKey] = useState(false)
@@ -33,19 +87,6 @@ export const ShortcutCard = ({
   const [editingName, setEditingName] = useState(false)
   const [editName, setEditName] = useState(shortcut.name)
   const nameDoneRef = useRef(false)
-
-  // Notify parent when rule editing starts/stops
-  useEffect(() => {
-    if (isRuleEditing) {
-      onEditStart?.(
-        shortcut.id,
-        () => ruleListRef.current?.saveEditing(),
-        () => ruleListRef.current?.cancelEditing(),
-      )
-    } else {
-      onEditEnd?.(shortcut.id)
-    }
-  }, [isRuleEditing, shortcut.id])
 
   // ── Key edit helpers ──────────────────────────────────────────────────────
   const startKeyEdit = () => {
@@ -190,17 +231,14 @@ export const ShortcutCard = ({
 
           <BrowserUrlBanner shortcutKey={shortcut.key} />
 
-          <div className="header-actions">
-            {!locked && (
-              <button
-                className="icon-btn danger"
-                onClick={() => onDelete(shortcut.id)}
-                title="Delete shortcut"
-              >
-                <IconTrash />
-              </button>
-            )}
-          </div>
+          {!locked && (
+            <div className="header-actions">
+              <MoreMenu
+                onDuplicate={() => onDuplicate(shortcut.id)}
+                onDelete={() => onDelete(shortcut.id)}
+              />
+            </div>
+          )}
 
           <button
             className={`lock-btn${locked ? ' active' : ''}`}
@@ -212,12 +250,10 @@ export const ShortcutCard = ({
         </div>
 
         <RuleList
-          ref={ruleListRef}
           rules={shortcut.rules}
           testResults={testResults}
           locked={locked}
           onLockedClick={flashLock}
-          onEditingChange={setIsRuleEditing}
           onReorder={(newRules) => onReorderRules(shortcut.id, newRules)}
           onAdd={(ruleData) => onAddRule(shortcut.id, ruleData)}
           onUpdate={(ruleId, ruleData) => onUpdateRule(shortcut.id, ruleId, ruleData)}

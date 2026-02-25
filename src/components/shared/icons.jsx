@@ -135,3 +135,19 @@ export const IconX = (props) => (
     <line x1="12" y1="4" x2="4" y2="12" />
   </svg>
 )
+
+export const IconMoreDots = (props) => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" {...props}>
+    <circle cx="8" cy="3.5" r="1.3" />
+    <circle cx="8" cy="8"   r="1.3" />
+    <circle cx="8" cy="12.5" r="1.3" />
+  </svg>
+)
+
+export const IconCopy = (props) => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"
+    stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <rect x="5.5" y="5.5" width="8" height="8" rx="1" />
+    <path d="M3.5 10.5H3A1.5 1.5 0 011.5 9V3A1.5 1.5 0 013 1.5h6A1.5 1.5 0 0110.5 3v.5" />
+  </svg>
+)

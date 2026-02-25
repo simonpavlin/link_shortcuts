@@ -1,4 +1,4 @@
-import { useState, useRef, forwardRef, useImperativeHandle } from 'react'
+import { useState, useRef } from 'react'
 import {
   DndContext,
   closestCenter,
@@ -14,54 +14,61 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import { PATTERN_TYPES } from '../../utils/shortcuts.utils'
-import { RuleRow } from './RuleRow'
+import { RuleRow, PatternField } from './RuleRow'
 import { IconArrowRight } from '../shared/icons'
 
-// ── Pattern helpers ───────────────────────────────────────────────────────────
-const PRESET_PATTERNS = {
-  '^\\d+$': { patternType: 'is-number', label: PATTERN_TYPES['is-number'].label },
-  '^\\w+$': { patternType: 'is-word',   label: PATTERN_TYPES['is-word'].label },
-  '.*':     { patternType: 'is-any',    label: PATTERN_TYPES['is-any'].label },
-}
+const DEFAULT_PT = 'number'
+
+const makeEmpty = (newId) => ({
+  id: newId(),
+  patternType: DEFAULT_PT,
+  pattern: PATTERN_TYPES[DEFAULT_PT].pattern,
+  url: '',
+})
 
 // ── Auto-expanding pending rows for adding new rules ─────────────────────────
 const PendingRows = ({ onAdd }) => {
   const rowIdRef = useRef(1)
   const newId = () => ++rowIdRef.current
 
-  const [rows, setRows] = useState([{ id: 0, pattern: '', url: '' }])
+  const [rows, setRows] = useState([{
+    id: 0,
+    patternType: DEFAULT_PT,
+    pattern: PATTERN_TYPES[DEFAULT_PT].pattern,
+    url: '',
+  }])
 
-  const handleChange = (id, field, value) => {
+  const handleUrlChange = (id, value) => {
     setRows((prev) => {
-      const next = prev.map((r) => (r.id === id ? { ...r, [field]: value } : r))
-      // When the last row gets any content → append a fresh empty row
+      const next = prev.map((r) => (r.id === id ? { ...r, url: value } : r))
       const changedIdx = next.findIndex((r) => r.id === id)
       const isLast = changedIdx === next.length - 1
-      const row = next[changedIdx]
-      if (isLast && (row.pattern || row.url)) {
-        return [...next, { id: newId(), pattern: '', url: '' }]
-      }
+      if (isLast && value) return [...next, makeEmpty(newId)]
       return next
     })
   }
 
+  const handlePatternChange = (id, { patternType, pattern }) => {
+    setRows((prev) => prev.map((r) => r.id === id ? { ...r, patternType, pattern } : r))
+  }
+
+  // Read rows directly (safe in event handlers — state is current by the time events fire)
+  // and call onAdd outside any state updater to avoid side-effects in render phase
   const commitRow = (id) => {
+    const row = rows.find((r) => r.id === id)
+    if (!row?.url.trim()) return
+
+    onAdd({
+      pattern: row.pattern,
+      url: row.url,
+      patternType: row.patternType,
+      label: PATTERN_TYPES[row.patternType]?.label ?? '',
+    })
+
     setRows((prev) => {
-      const row = prev.find((r) => r.id === id)
-      if (!row?.url.trim()) return prev
-      const preset = PRESET_PATTERNS[row.pattern]
-      onAdd({
-        pattern: row.pattern,
-        url: row.url,
-        patternType: preset?.patternType ?? 'custom',
-        label: preset?.label ?? '',
-      })
       const filtered = prev.filter((r) => r.id !== id)
-      // Always keep at least one empty row at the bottom
       const last = filtered[filtered.length - 1]
-      if (!last || last.pattern || last.url) {
-        return [...filtered, { id: newId(), pattern: '', url: '' }]
-      }
+      if (!last || last.url) return [...filtered, makeEmpty(newId)]
       return filtered
     })
   }
@@ -70,16 +77,13 @@ const PendingRows = ({ onAdd }) => {
     setRows((prev) => {
       const row = prev.find((r) => r.id === id)
       if (!row) return prev
-      // If row has content → clear it; if already empty → remove it (keep ≥1)
-      if (row.pattern || row.url) {
-        return prev.map((r) => (r.id === id ? { ...r, pattern: '', url: '' } : r))
+      if (row.url) {
+        return prev.map((r) => (r.id === id ? { ...r, url: '' } : r))
       }
       if (prev.length === 1) return prev
       const filtered = prev.filter((r) => r.id !== id)
       const last = filtered[filtered.length - 1]
-      if (!last || last.pattern || last.url) {
-        return [...filtered, { id: newId(), pattern: '', url: '' }]
-      }
+      if (!last || last.url) return [...filtered, makeEmpty(newId)]
       return filtered
     })
   }
@@ -95,11 +99,10 @@ const PendingRows = ({ onAdd }) => {
           <div key={row.id} className="rule-phantom-wrap">
             <div className="rule-form">
               <div className="rule-form-row">
-                <input
-                  className="input input-ghost"
-                  placeholder="regex…"
-                  value={row.pattern}
-                  onChange={(e) => handleChange(row.id, 'pattern', e.target.value)}
+                <PatternField
+                  patternType={row.patternType}
+                  pattern={row.pattern}
+                  onChange={(val) => handlePatternChange(row.id, val)}
                   onKeyDown={handleKeyDown}
                 />
                 <span className="rule-form-arrow"><IconArrowRight /></span>
@@ -107,7 +110,7 @@ const PendingRows = ({ onAdd }) => {
                   className="input input-ghost"
                   placeholder="https://example.com/%s"
                   value={row.url}
-                  onChange={(e) => handleChange(row.id, 'url', e.target.value)}
+                  onChange={(e) => handleUrlChange(row.id, e.target.value)}
                   onKeyDown={handleKeyDown}
                 />
               </div>
@@ -120,7 +123,7 @@ const PendingRows = ({ onAdd }) => {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export const RuleList = forwardRef(({
+export const RuleList = ({
   rules,
   testResults,
   locked,
@@ -129,20 +132,8 @@ export const RuleList = forwardRef(({
   onAdd,
   onUpdate,
   onDelete,
-  onEditingChange,
-}, ref) => {
+}) => {
   const [editingId, setEditingId] = useState(null)
-  const editingRowRef = useRef(null)
-
-  const handleSetEditing = (id) => {
-    setEditingId(id)
-    onEditingChange?.(id !== null)
-  }
-
-  useImperativeHandle(ref, () => ({
-    saveEditing: () => editingRowRef.current?.save(),
-    cancelEditing: () => handleSetEditing(null),
-  }))
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -167,15 +158,14 @@ export const RuleList = forwardRef(({
           {rules.map((rule) => (
             <RuleRow
               key={rule.id}
-              ref={editingId === rule.id ? editingRowRef : null}
               rule={rule}
               matchResult={testResults ? (testResults[rule.id] ?? null) : null}
               locked={locked}
               onLockedClick={onLockedClick}
               isEditing={editingId === rule.id}
-              onEdit={() => handleSetEditing(rule.id)}
-              onSave={(data) => { onUpdate(rule.id, data); handleSetEditing(null) }}
-              onCancel={() => handleSetEditing(null)}
+              onEdit={() => setEditingId(rule.id)}
+              onSave={(data) => { onUpdate(rule.id, data); setEditingId(null) }}
+              onCancel={() => setEditingId(null)}
               onDelete={() => onDelete(rule.id)}
             />
           ))}
@@ -185,6 +175,4 @@ export const RuleList = forwardRef(({
       {!locked && <PendingRows onAdd={onAdd} />}
     </div>
   )
-})
-
-RuleList.displayName = 'RuleList'
+}
