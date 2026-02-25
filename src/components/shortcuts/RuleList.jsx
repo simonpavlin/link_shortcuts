@@ -17,12 +17,10 @@ import { PATTERN_TYPES } from '../../utils/shortcuts.utils'
 import { RuleRow, PatternField } from './RuleRow'
 import { IconArrowRight } from '../shared/icons'
 
-const DEFAULT_PT = 'number'
-
 const makeEmpty = (newId) => ({
   id: newId(),
-  patternType: DEFAULT_PT,
-  pattern: PATTERN_TYPES[DEFAULT_PT].pattern,
+  patternType: null,
+  pattern: '',
   url: '',
 })
 
@@ -31,12 +29,7 @@ const PendingRows = ({ onAdd }) => {
   const rowIdRef = useRef(1)
   const newId = () => ++rowIdRef.current
 
-  const [rows, setRows] = useState([{
-    id: 0,
-    patternType: DEFAULT_PT,
-    pattern: PATTERN_TYPES[DEFAULT_PT].pattern,
-    url: '',
-  }])
+  const [rows, setRows] = useState([{ id: 0, patternType: null, pattern: '', url: '' }])
 
   const handleUrlChange = (id, value) => {
     setRows((prev) => {
@@ -58,11 +51,13 @@ const PendingRows = ({ onAdd }) => {
     const row = rows.find((r) => r.id === id)
     if (!row?.url.trim()) return
 
+    const patternType = row.patternType ?? 'number'
+    const pattern = row.pattern || (PATTERN_TYPES[patternType]?.pattern ?? '')
     onAdd({
-      pattern: row.pattern,
+      pattern,
       url: row.url,
-      patternType: row.patternType,
-      label: PATTERN_TYPES[row.patternType]?.label ?? '',
+      patternType,
+      label: PATTERN_TYPES[patternType]?.label ?? '',
     })
 
     setRows((prev) => {
@@ -92,13 +87,18 @@ const PendingRows = ({ onAdd }) => {
     <div className="pending-rows">
       {rows.map((row) => {
         const handleKeyDown = (e) => {
-          if (e.key === 'Enter') { e.preventDefault(); commitRow(row.id) }
+          if (e.key === 'Enter' || ((e.ctrlKey || e.metaKey) && e.key === 's')) { e.preventDefault(); commitRow(row.id) }
           if (e.key === 'Escape') clearRow(row.id)
         }
+        const handleBlur = (e) => {
+          if (e.currentTarget.contains(e.relatedTarget)) return
+          commitRow(row.id)
+        }
         return (
-          <div key={row.id} className="rule-phantom-wrap">
+          <div key={row.id} className="rule-phantom-wrap" onBlur={handleBlur}>
             <div className="rule-form">
               <div className="rule-form-row">
+                <span />
                 <PatternField
                   patternType={row.patternType}
                   pattern={row.pattern}

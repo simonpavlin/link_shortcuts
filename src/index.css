@@ -558,7 +558,7 @@ a:hover { text-decoration: underline; }
   color: var(--text-label);
   display: flex;
   align-items: center;
-  opacity: 0;
+  opacity: 0.4;
   transition: opacity var(--t);
 }
 .rule-drag-handle:active { cursor: grabbing; }
@@ -604,16 +604,13 @@ a:hover { text-decoration: underline; }
    RULE FORM (add / edit)
    ===================================================== */
 .rule-form {
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
+  padding: 6px 8px;
 }
 
-/* No ✓ button column – just pattern | arrow | url */
+/* Spacer | pattern | arrow | url  — mirrors rule-row grid minus actions col */
 .rule-form-row {
   display: grid;
-  grid-template-columns: 1fr 14px 1.6fr;
+  grid-template-columns: 14px 1fr 14px 1.6fr;
   gap: 10px;
   align-items: center;
 }
@@ -664,14 +661,17 @@ a:hover { text-decoration: underline; }
 .pending-rows { display: flex; flex-direction: column; }
 
 .rule-phantom-wrap {
+  position: relative;
+  z-index: 0;
   border-top: 1px dashed rgba(255, 255, 255, 0.10);
-  opacity: 0.60;
+  opacity: 0.32;
   transition: opacity var(--t);
   animation: fadeUp 0.18s ease both;
 }
 .rule-phantom-wrap:focus-within { opacity: 1; }
-.rule-phantom-wrap:not(:first-child) { opacity: 0.42; }
+.rule-phantom-wrap:not(:first-child) { opacity: 0.20; }
 .rule-phantom-wrap:not(:first-child):focus-within { opacity: 1; }
+.rule-phantom-wrap:has(.pattern-dropdown-menu) { z-index: 5; }
 
 /* =====================================================
    GLOBAL TEST FIELD
@@ -833,6 +833,15 @@ a:hover { text-decoration: underline; }
 [data-theme="light"] .pattern-type-badge:hover {
   border-color: rgba(var(--accent-1-rgb), 0.45);
   background: rgba(var(--accent-1-rgb), 0.06);
+}
+
+/* Placeholder badge — no type selected yet */
+.pattern-type-placeholder {
+  border-style: dashed;
+  color: var(--text-muted);
+}
+.pattern-type-placeholder:hover {
+  border-style: dashed;
 }
 
 /* Custom mode (const / regex): text input + chevron overlay */
@@ -1320,6 +1329,52 @@ select.input option { background: #1a1a24; color: var(--text); }
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toastShow {
+  0%   { opacity: 0; transform: translate(-50%, 10px); }
+  12%  { opacity: 1; transform: translate(-50%, 0); }
+  80%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, 0); }
+}
+
+@keyframes checkDraw {
+  from { stroke-dashoffset: 16; }
+  to   { stroke-dashoffset: 0; }
+}
+
+.toast-saved {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  z-index: 9999;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  background: #166534;
+  border: 1px solid rgba(74, 222, 128, 0.25);
+  color: #dcfce7;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: toastShow 2s ease forwards;
+}
+
+.toast-check-svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.toast-check-path {
+  stroke: #4ade80;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 16;
+  animation: checkDraw 0.35s cubic-bezier(0.4, 0, 0.2, 1) 0.12s both;
 }
 .shortcut-card-wrap {
   animation: fadeUp 0.3s ease both;

@@ -59,7 +59,7 @@ export const LookupEntryRow = ({ entry, allTags, onUpdate, onDelete }) => {
           onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
           placeholder="https://…"
           onKeyDown={(e) => {
-            if (e.key === 'Enter') { cancelledRef.current = false; commit(form) }
+            if (e.key === 'Enter' || ((e.ctrlKey || e.metaKey) && e.key === 's')) { e.preventDefault(); cancelledRef.current = false; commit(form) }
             if (e.key === 'Escape') cancel()
           }}
         />

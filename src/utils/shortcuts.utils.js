@@ -1,11 +1,11 @@
 import { v4 as uuidv4 } from 'uuid'
 
 export const PATTERN_TYPES = {
-  'number': { label: 'Number', pattern: '^\\d+$' },
-  'string': { label: 'Anything', pattern: '^.+$' },
-  'url':    { label: 'URL',    pattern: '^https?://' },
-  'const':  { label: 'Const',  pattern: null },
-  'regex':  { label: 'Regex',  pattern: null },
+  'number': { label: 'isNumber',   pattern: '^\\d+$' },
+  'string': { label: 'isAnything', pattern: '^.+$' },
+  'url':    { label: 'isURL',      pattern: '^https?://' },
+  'const':  { label: 'isConst',    pattern: null },
+  'regex':  { label: 'isRegex',    pattern: null },
 }
 
 /**

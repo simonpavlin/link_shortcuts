@@ -11,8 +11,9 @@ export const PatternField = ({ patternType, pattern, onChange, onKeyDown, autoFo
   const [open, setOpen] = useState(false)
   const dropRef = useRef(null)
 
-  // Backward-compat: old stored patternTypes fall back to 'regex' display
-  const effectiveType = PATTERN_TYPES[patternType] ? patternType : 'regex'
+  // null = placeholder (no type chosen yet); unknown legacy keys fall back to 'regex'
+  const isPlaceholder = patternType == null
+  const effectiveType = isPlaceholder ? null : (PATTERN_TYPES[patternType] ? patternType : 'regex')
   const isCustom = effectiveType === 'const' || effectiveType === 'regex'
 
   useEffect(() => {
@@ -49,6 +50,22 @@ export const PatternField = ({ patternType, pattern, onChange, onKeyDown, autoFo
     </div>
   )
 
+  if (isPlaceholder) {
+    return (
+      <div ref={dropRef} className="pattern-field-wrap pattern-field-preset">
+        <button
+          type="button"
+          className="pattern-type-badge pattern-type-placeholder"
+          onClick={() => setOpen((o) => !o)}
+        >
+          <span className="pattern-badge-label">Select Rule</span>
+          <IconChevronDown />
+        </button>
+        {open && menu}
+      </div>
+    )
+  }
+
   if (isCustom) {
     return (
       <div ref={dropRef} className="pattern-field-wrap pattern-field-custom">
@@ -74,8 +91,6 @@ export const PatternField = ({ patternType, pattern, onChange, onKeyDown, autoFo
     )
   }
 
-  const presetPattern = PATTERN_TYPES[effectiveType]?.pattern ?? ''
-
   return (
     <div ref={dropRef} className="pattern-field-wrap pattern-field-preset">
       <button
@@ -84,7 +99,6 @@ export const PatternField = ({ patternType, pattern, onChange, onKeyDown, autoFo
         onClick={() => setOpen((o) => !o)}
       >
         <span className="pattern-badge-label">{PATTERN_TYPES[effectiveType]?.label ?? effectiveType}</span>
-        {presetPattern && <span className="pattern-badge-regex">{presetPattern}</span>}
         <IconChevronDown />
       </button>
       {open && menu}
@@ -161,7 +175,7 @@ export const RuleRow = ({
   const handleUrlChange = (v) => { setEditUrl(v); editUrlRef.current = v }
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); doSave() }
+    if (e.key === 'Enter' || ((e.ctrlKey || e.metaKey) && e.key === 's')) { e.preventDefault(); doSave() }
     if (e.key === 'Escape') { cancelledRef.current = true; onCancel() }
   }
 
@@ -211,12 +225,14 @@ export const RuleRow = ({
     if (pt === 'const') {
       return <span className="rule-pattern-text rule-pattern-const">&quot;{rule.pattern}&quot;</span>
     }
+    if (pt === 'regex') {
+      return <span className="rule-pattern-text rule-pattern-const">{rule.pattern}</span>
+    }
     const meta = PATTERN_TYPES[pt]
     if (meta) {
       return (
         <span className="rule-pattern-text rule-pattern-preset">
           <span className="pattern-badge-label">{meta.label}</span>
-          {meta.pattern && <span className="pattern-badge-regex">{meta.pattern}</span>}
         </span>
       )
     }
