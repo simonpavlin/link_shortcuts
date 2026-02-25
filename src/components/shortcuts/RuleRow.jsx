@@ -3,7 +3,7 @@ import { useSortable } from '@dnd-kit/sortable'
 import { PATTERN_TYPES } from '../../utils/shortcuts.utils'
 import { IconDrag, IconTrash, IconArrowRight, IconCheck, IconX, IconMinus, IconChevronDown } from '../shared/icons'
 
-const PRESET_OPTIONS = ['number', 'string', 'url', 'const', 'regex']
+const PRESET_OPTIONS = ['number', 'string', 'url', 'empty', 'const', 'regex']
 
 // ── PatternField ──────────────────────────────────────────────────────────────
 // Dropdown for preset types; switches to text field for 'const' and 'regex'.

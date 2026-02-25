@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { evaluateRules } from '../../utils/shortcuts.utils'
 import { RuleList } from './RuleList'
 import { BrowserUrlBanner } from './BrowserUrlBanner'
-import { IconLock, IconLockOpen, IconTrash, IconMoreDots, IconCopy, IconX } from '../shared/icons'
+import { IconLock, IconLockOpen, IconTrash, IconMoreDots, IconCopy } from '../shared/icons'
 
 // ── 3-dot menu with duplicate + delete confirmation ───────────────────────────
 const MoreMenu = ({ onDuplicate, onDelete }) => {
@@ -77,6 +77,7 @@ export const ShortcutCard = ({
   const [locked, setLocked] = useState(false)
   const [lockFlash, setLockFlash] = useState(0)
   const [testParam, setTestParam] = useState('')
+  const [testFocused, setTestFocused] = useState(false)
 
   // Inline key editing
   const [editingKey, setEditingKey] = useState(false)
@@ -146,10 +147,11 @@ export const ShortcutCard = ({
   }
 
   // ── Rule test results ─────────────────────────────────────────────────────
-  const isGlobalMatch = globalCommand === shortcut.key && !!globalParam
+  const isGlobalMatch = globalCommand === shortcut.key && globalParam !== null
   const activeTestParam = testParam || (isGlobalMatch ? (globalParam ?? '') : '')
+  const isTesting = testFocused || isGlobalMatch
 
-  const allResults = activeTestParam.length > 0
+  const allResults = isTesting
     ? evaluateRules(shortcut.rules, activeTestParam)
     : null
   const firstMatchIdx = allResults ? allResults.findIndex((r) => r.matched) : -1
@@ -200,7 +202,7 @@ export const ShortcutCard = ({
         ) : null}
       </div>
 
-      <div className={`shortcut-card${locked ? ' locked' : ''}${isGlobalMatch ? ' card-global-match' : ''}`}>
+      <div className={`shortcut-card${locked ? ' locked' : ''}${isTesting && !hasNoMatch ? ' card-global-match' : ''}${isTesting && hasNoMatch ? ' card-no-match' : ''}`}>
         {lockFlash > 0 && (
           <div key={lockFlash} className="lock-notify" onAnimationEnd={() => setLockFlash(0)}>
             Card is locked — click the lock icon to unlock.
@@ -236,7 +238,9 @@ export const ShortcutCard = ({
             className="test-inline-input"
             value={testParam}
             onChange={(e) => setTestParam(e.target.value)}
-            placeholder="12345"
+            onFocus={() => setTestFocused(true)}
+            onBlur={() => setTestFocused(false)}
+            placeholder="test…"
           />
 
           <BrowserUrlBanner shortcutKey={shortcut.key} />
@@ -270,12 +274,6 @@ export const ShortcutCard = ({
           onUpdate={(ruleId, ruleData) => onUpdateRule(shortcut.id, ruleId, ruleData)}
           onDelete={(ruleId) => onDeleteRule(shortcut.id, ruleId)}
         />
-        {hasNoMatch && (
-          <div className="test-no-match">
-            <IconX />
-            No rule matched
-          </div>
-        )}
       </div>
     </div>
   )

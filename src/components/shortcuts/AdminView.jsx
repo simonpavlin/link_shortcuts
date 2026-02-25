@@ -27,6 +27,7 @@ export const AdminView = ({ prefillCommand, prefillParam }) => {
     if (!prefillCommand) return ''
     return prefillParam ? `${prefillCommand} ${prefillParam}` : prefillCommand
   })
+  const [globalFocused, setGlobalFocused] = useState(!!prefillCommand)
 
   const { shortcuts } = data
   const mutate = (newShortcuts) => setData({ shortcuts: newShortcuts })
@@ -38,7 +39,7 @@ export const AdminView = ({ prefillCommand, prefillParam }) => {
     : (globalTestInput.slice(0, spaceIdx) || null)
   const globalParam = spaceIdx === -1
     ? null
-    : (globalTestInput.slice(spaceIdx + 1) || null)
+    : globalTestInput.slice(spaceIdx + 1)
 
   const handleAddShortcut = () => {
     if (!newForm.key.trim()) return
@@ -77,6 +78,8 @@ export const AdminView = ({ prefillCommand, prefillParam }) => {
           className="global-test-input"
           value={globalTestInput}
           onChange={(e) => setGlobalTestInput(e.target.value)}
+          onFocus={() => setGlobalFocused(true)}
+          onBlur={() => setGlobalFocused(false)}
           placeholder="Test globally: mr 12345"
           spellCheck={false}
         />
@@ -101,8 +104,8 @@ export const AdminView = ({ prefillCommand, prefillParam }) => {
             key={s.id}
             shortcut={s}
             animationDelay={i * 0.07}
-            globalCommand={globalCommand}
-            globalParam={globalParam}
+            globalCommand={globalFocused ? globalCommand : null}
+            globalParam={globalFocused ? globalParam : null}
             onUpdate={(id, formData) => mutate(updateShortcut(shortcuts, id, formData))}
             onDelete={(id) => mutate(deleteShortcut(shortcuts, id))}
             onDuplicate={(id) => mutate(duplicateShortcut(shortcuts, id))}

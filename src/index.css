@@ -756,16 +756,24 @@ a:hover { text-decoration: underline; }
 }
 
 /* =====================================================
-   CARD GLOBAL MATCH HIGHLIGHT  (clarity green)
+   CARD TEST MATCH HIGHLIGHTS
    ===================================================== */
 .card-global-match {
   border-color: rgba(67, 224, 151, 0.45) !important;
   box-shadow: 0 0 0 1px rgba(67, 224, 151, 0.18), 0 4px 28px rgba(67, 224, 151, 0.12);
 }
+.card-no-match {
+  border-color: rgba(248, 113, 113, 0.45) !important;
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.18), 0 4px 28px rgba(248, 113, 113, 0.10);
+}
 
 [data-theme="light"] .card-global-match {
   border-color: rgba(13, 144, 96, 0.50) !important;
   box-shadow: 0 0 0 1px rgba(13, 144, 96, 0.18), 0 4px 20px rgba(13, 144, 96, 0.08);
+}
+[data-theme="light"] .card-no-match {
+  border-color: rgba(185, 28, 28, 0.45) !important;
+  box-shadow: 0 0 0 1px rgba(185, 28, 28, 0.15), 0 4px 20px rgba(185, 28, 28, 0.08);
 }
 
 /* =====================================================
@@ -1120,17 +1128,6 @@ a:hover { text-decoration: underline; }
 .rule-match-no   { color: var(--danger); opacity: 0.65; }
 .rule-match-skip { color: var(--text-label); opacity: 0.40; }
 
-/* No-match banner */
-.test-no-match {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 10px;
-  border-top: 1px solid var(--border);
-  font-size: 12px;
-  color: var(--danger);
-  opacity: 0.75;
-}
 
 /* Matched URL shown as link in url column */
 .rule-url-text.matched { color: var(--accent-3); }
