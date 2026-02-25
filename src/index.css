@@ -539,10 +539,11 @@ a:hover { text-decoration: underline; }
   flex-direction: column;
 }
 
-/* Row grid: drag | pattern | arrow | url | action */
+/* Row grid: drag | pattern | arrow | url */
 .rule-row {
+  position: relative;
   display: grid;
-  grid-template-columns: 14px 1fr 14px 1.6fr auto;
+  grid-template-columns: 14px 1fr 14px 1.6fr;
   gap: 10px;
   align-items: center;
   padding: 6px 8px;
@@ -592,13 +593,21 @@ a:hover { text-decoration: underline; }
 }
 
 .rule-row-actions {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
   gap: 2px;
   opacity: 0;
   transition: opacity var(--t);
-  justify-content: flex-end;
+  pointer-events: none;
 }
-.rule-row:hover .rule-row-actions { opacity: 1; }
+.rule-row:hover .rule-row-actions,
+.rule-row-actions:has(.confirm-delete-inline) {
+  opacity: 1;
+  pointer-events: auto;
+}
 
 /* =====================================================
    RULE FORM (add / edit)
@@ -940,9 +949,9 @@ a:hover { text-decoration: underline; }
   font-style: italic;
 }
 
-/* Edit-mode inner grid: pattern | arrow | url, spans grid cols 2-4 */
+/* Edit-mode inner grid: pattern | arrow | url, spans grid cols 2–4 */
 .rule-edit-fields {
-  grid-column: 2 / 5;
+  grid-column: 2 / -1;
   display: grid;
   grid-template-columns: 1fr 14px 1.6fr;
   gap: 10px;
@@ -1064,10 +1073,6 @@ a:hover { text-decoration: underline; }
 }
 .confirm-delete-inline .btn-no:hover { background: var(--surface-active); }
 
-/* =====================================================
-   RULE ROW – CLICK TO EDIT
-   ===================================================== */
-.rule-row-clickable { cursor: pointer; }
 
 /* =====================================================
    RULE INLINE EDIT
@@ -1111,8 +1116,6 @@ a:hover { text-decoration: underline; }
   color: var(--text);
 }
 
-/* Editing row state */
-.rule-row.editing .rule-row-actions { opacity: 1; }
 
 /* Match indicators */
 @keyframes matchReveal {

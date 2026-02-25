@@ -114,10 +114,7 @@ export const RuleRow = ({
   testIndex,
   locked,
   onLockedClick,
-  isEditing,
-  onEdit,
   onSave,
-  onCancel,
   onDelete,
 }) => {
   const [editPatternType, setEditPatternType] = useState(rule.patternType ?? 'regex')
@@ -125,27 +122,12 @@ export const RuleRow = ({
   const [editUrl, setEditUrl]                 = useState(rule.url)
   const [confirmDelete, setConfirmDelete]     = useState(false)
 
-  // Refs so doSave never reads stale closure values
   const editPatternTypeRef = useRef(rule.patternType ?? 'regex')
   const editPatternRef     = useRef(rule.pattern)
   const editUrlRef         = useRef(rule.url)
   const onSaveRef          = useRef(onSave)
   const cancelledRef       = useRef(false)
   useEffect(() => { onSaveRef.current = onSave }, [onSave])
-
-  // Sync edit state when editing starts
-  useEffect(() => {
-    if (isEditing) {
-      const pt = rule.patternType ?? 'regex'
-      setEditPatternType(pt)
-      setEditPattern(rule.pattern)
-      setEditUrl(rule.url)
-      editPatternTypeRef.current = pt
-      editPatternRef.current = rule.pattern
-      editUrlRef.current = rule.url
-      cancelledRef.current = false
-    }
-  }, [isEditing, rule.patternType, rule.pattern, rule.url])
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: rule.id })
@@ -178,20 +160,19 @@ export const RuleRow = ({
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' || ((e.ctrlKey || e.metaKey) && e.key === 's')) { e.preventDefault(); doSave() }
-    if (e.key === 'Escape') { cancelledRef.current = true; onCancel() }
+    if (e.key === 'Escape') {
+      cancelledRef.current = true
+      const pt = rule.patternType ?? 'regex'
+      setEditPatternType(pt); editPatternTypeRef.current = pt
+      setEditPattern(rule.pattern); editPatternRef.current = rule.pattern
+      setEditUrl(rule.url); editUrlRef.current = rule.url
+    }
   }
 
-  // Auto-save when focus leaves the edit container entirely
   const handleContainerBlur = (e) => {
     if (e.currentTarget.contains(e.relatedTarget)) return
     if (cancelledRef.current) { cancelledRef.current = false; return }
     doSave()
-  }
-
-  const handleRowClick = () => {
-    if (isEditing) return
-    if (locked) { onLockedClick(); return }
-    onEdit()
   }
 
   const handleDelete = (e) => {
@@ -200,9 +181,8 @@ export const RuleRow = ({
     onDelete()
   }
 
-  // First col: editing → empty, testing → ✓/✗/–, default → drag handle
+  // First col: testing → ✓/✗/–, default → drag handle
   const firstCol = () => {
-    if (isEditing) return <span />
     if (matchResult !== null) {
       const delay = { animationDelay: `${testIndex * 0.07}s` }
       const animKey = `${testParam}-${rule.id}`
@@ -225,102 +205,50 @@ export const RuleRow = ({
     )
   }
 
-  // Pattern display in non-edit mode
-  const patternDisplay = () => {
-    const pt = rule.patternType
-    if (pt === 'const') {
-      return <span className="rule-pattern-text rule-pattern-const">&quot;{rule.pattern}&quot;</span>
-    }
-    if (pt === 'regex') {
-      return <span className="rule-pattern-text rule-pattern-const">{rule.pattern}</span>
-    }
-    const meta = PATTERN_TYPES[pt]
-    if (meta) {
-      return (
-        <span className="rule-pattern-text rule-pattern-preset">
-          <span className="pattern-badge-label">{meta.label}</span>
-        </span>
-      )
-    }
-    return <span className="rule-pattern-text">{rule.pattern}</span>
-  }
-
-  // URL col in non-edit mode
-  const urlCol = () => {
-    if (matchResult?.matched && matchResult.resultUrl) {
-      return (
-        <a
-          href={matchResult.resultUrl}
-          className="rule-url-text matched"
-          target="_blank"
-          rel="noopener noreferrer"
-          title={matchResult.resultUrl}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {matchResult.resultUrl}
-        </a>
-      )
-    }
-    return <span className="rule-url-text">{rule.url}</span>
-  }
-
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`rule-row${isDragging ? ' dragging' : ''}${isEditing ? ' editing' : ''}${!isEditing && !locked ? ' rule-row-clickable' : ''}`}
-      onClick={handleRowClick}
+      className={`rule-row${isDragging ? ' dragging' : ''}`}
     >
       {firstCol()}
 
-      {/* Cols 2-4: a single wrapper div when editing so onBlur can cover all fields */}
-      {isEditing ? (
-        <div className="rule-edit-fields" onBlur={handleContainerBlur}>
-          <PatternField
-            patternType={editPatternType}
-            pattern={editPattern}
-            onChange={handlePatternChange}
-            onKeyDown={handleKeyDown}
-            autoFocus
-          />
-          <span className="rule-form-arrow"><IconArrowRight /></span>
-          <input
-            className="rule-input-url"
-            value={editUrl}
-            onChange={(e) => handleUrlChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="https://example.com/%s"
-          />
-        </div>
-      ) : (
-        <>
-          {patternDisplay()}
-          <span className="rule-arrow-icon"><IconArrowRight /></span>
-          {urlCol()}
-        </>
-      )}
+      <div className="rule-edit-fields" onBlur={handleContainerBlur}>
+        <PatternField
+          patternType={editPatternType}
+          pattern={editPattern}
+          onChange={handlePatternChange}
+          onKeyDown={handleKeyDown}
+        />
+        <span className="rule-form-arrow"><IconArrowRight /></span>
+        <input
+          className="rule-input-url"
+          value={editUrl}
+          onChange={(e) => handleUrlChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="https://example.com/%s"
+        />
+      </div>
 
       <div
         className="rule-row-actions"
         style={confirmDelete ? { opacity: 1 } : undefined}
         onClick={(e) => e.stopPropagation()}
       >
-        {!isEditing && (
-          confirmDelete ? (
-            <div className="confirm-delete-inline">
-              <span className="confirm-text">Delete?</span>
-              <button className="btn-yes" onClick={handleDelete}>Yes</button>
-              <button className="btn-no" onClick={(e) => { e.stopPropagation(); setConfirmDelete(false) }}>No</button>
-            </div>
-          ) : (
-            <button
-              className="icon-btn danger"
-              onClick={(e) => { e.stopPropagation(); setConfirmDelete(true) }}
-              title="Delete"
-            >
-              <IconTrash />
-            </button>
-          )
+        {confirmDelete ? (
+          <div className="confirm-delete-inline">
+            <span className="confirm-text">Delete?</span>
+            <button className="btn-yes" onClick={handleDelete}>Yes</button>
+            <button className="btn-no" onClick={(e) => { e.stopPropagation(); setConfirmDelete(false) }}>No</button>
+          </div>
+        ) : (
+          <button
+            className="icon-btn danger"
+            onClick={(e) => { e.stopPropagation(); setConfirmDelete(true) }}
+            title="Delete"
+          >
+            <IconTrash />
+          </button>
         )}
       </div>
     </div>

@@ -134,8 +134,6 @@ export const RuleList = ({
   onUpdate,
   onDelete,
 }) => {
-  const [editingId, setEditingId] = useState(null)
-
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -148,9 +146,7 @@ export const RuleList = ({
     onReorder(arrayMove(rules, oldIndex, newIndex))
   }
 
-  const sortableIds = editingId
-    ? rules.map((r) => r.id).filter((id) => id !== editingId)
-    : rules.map((r) => r.id)
+  const sortableIds = rules.map((r) => r.id)
 
   return (
     <div className="rule-table">
@@ -165,10 +161,7 @@ export const RuleList = ({
               testIndex={idx}
               locked={locked}
               onLockedClick={onLockedClick}
-              isEditing={editingId === rule.id}
-              onEdit={() => setEditingId(rule.id)}
-              onSave={(data) => { onUpdate(rule.id, data); setEditingId(null) }}
-              onCancel={() => setEditingId(null)}
+              onSave={(data) => onUpdate(rule.id, data)}
               onDelete={() => onDelete(rule.id)}
             />
           ))}
