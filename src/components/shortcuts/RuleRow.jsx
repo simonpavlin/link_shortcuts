@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { PATTERN_TYPES } from '../../utils/shortcuts.utils'
-import { IconDrag, IconTrash, IconArrowRight, IconCheck, IconX, IconMinus, IconChevronDown } from '../shared/icons'
+import { DeleteConfirm } from '../shared/DeleteConfirm'
+import { IconDrag, IconArrowRight, IconCheck, IconX, IconMinus, IconChevronDown } from '../shared/icons'
 
 const PRESET_OPTIONS = ['number', 'string', 'url', 'empty', 'const', 'regex']
 
@@ -118,7 +119,6 @@ export const RuleRow = ({
   const [editPatternType, setEditPatternType] = useState(rule.patternType ?? 'regex')
   const [editPattern, setEditPattern]         = useState(rule.pattern)
   const [editUrl, setEditUrl]                 = useState(rule.url)
-  const [confirmDelete, setConfirmDelete]     = useState(false)
 
   const editPatternTypeRef = useRef(rule.patternType ?? 'regex')
   const editPatternRef     = useRef(rule.pattern)
@@ -173,11 +173,6 @@ export const RuleRow = ({
     doSave()
   }
 
-  const handleDelete = (e) => {
-    e.stopPropagation()
-    onDelete()
-  }
-
   // First col: testing → ✓/✗/–, default → drag handle
   const firstCol = () => {
     if (matchResult !== null) {
@@ -227,27 +222,11 @@ export const RuleRow = ({
         />
       </div>
 
-      <div
+      <DeleteConfirm
         className="rule-row-actions"
-        style={confirmDelete ? { opacity: 1 } : undefined}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {confirmDelete ? (
-          <div className="confirm-delete-inline">
-            <span className="confirm-text">Delete?</span>
-            <button className="btn-yes" onClick={handleDelete}>Yes</button>
-            <button className="btn-no" onClick={(e) => { e.stopPropagation(); setConfirmDelete(false) }}>No</button>
-          </div>
-        ) : (
-          <button
-            className="icon-btn danger"
-            onClick={(e) => { e.stopPropagation(); setConfirmDelete(true) }}
-            title="Delete"
-          >
-            <IconTrash />
-          </button>
-        )}
-      </div>
+        onDelete={onDelete}
+        stopPropagation
+      />
     </div>
   )
 }

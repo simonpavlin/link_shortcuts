@@ -11,15 +11,14 @@ import {
 } from '../../utils/lookup.utils'
 import { LookupTableCard } from './LookupTableCard'
 import { DataPorter } from '../shared/DataPorter'
-import { IconPlus, IconX } from '../shared/icons'
+import { GlobalTestInput } from '../shared/GlobalTestInput'
+import { AddCardForm } from '../shared/AddCardForm'
 
 const STORAGE_KEY = 'linker_lookup'
 const INITIAL = { tables: [] }
 
 export const LookupAdminView = () => {
   const [data, setData] = useLocalStorage(STORAGE_KEY, INITIAL)
-  const [addingNew, setAddingNew] = useState(false)
-  const [newForm, setNewForm] = useState({ key: '', name: '' })
   const [testInput, setTestInput] = useState('')
 
   const { tables } = data
@@ -30,17 +29,9 @@ export const LookupAdminView = () => {
   const testKey = spaceIdx === -1 ? (testInput.trim() || null) : (testInput.slice(0, spaceIdx) || null)
   const testTags = spaceIdx === -1 ? [] : testInput.slice(spaceIdx + 1).split(' ').filter(Boolean)
 
-  const handleAdd = () => {
-    if (!newForm.key.trim()) return
-    const result = addTable(tables, newForm)
+  const handleAddTable = (form) => {
+    const result = addTable(tables, form)
     mutate(result.tables)
-    setAddingNew(false)
-    setNewForm({ key: '', name: '' })
-  }
-
-  const handleNewKeyDown = (e) => {
-    if (e.key === 'Enter') handleAdd()
-    if (e.key === 'Escape') { setAddingNew(false); setNewForm({ key: '', name: '' }) }
   }
 
   return (
@@ -60,24 +51,14 @@ export const LookupAdminView = () => {
         </p>
       </div>
 
-      {/* Global test field */}
-      <div className="global-test-wrap">
-        <input
-          className="global-test-input"
-          value={testInput}
-          onChange={(e) => setTestInput(e.target.value)}
-          placeholder="Test: projects react typescript"
-          spellCheck={false}
-        />
-        {testInput && (
-          <button className="icon-btn" onClick={() => setTestInput('')} title="Clear">
-            <IconX />
-          </button>
-        )}
-      </div>
+      <GlobalTestInput
+        value={testInput}
+        onChange={setTestInput}
+        placeholder="Test: projects react typescript"
+      />
 
       <div className="shortcuts-stack">
-        {tables.length === 0 && !addingNew && (
+        {tables.length === 0 && (
           <p className="empty-hint">No tables yet — add one below.</p>
         )}
 
@@ -101,39 +82,10 @@ export const LookupAdminView = () => {
           />
         ))}
 
-        {addingNew ? (
-          <div className="shortcut-card">
-            <div className="add-shortcut-form">
-              <input
-                className="input input-key"
-                value={newForm.key}
-                onChange={(e) => setNewForm((f) => ({ ...f, key: e.target.value }))}
-                onKeyDown={handleNewKeyDown}
-                placeholder="key"
-                autoFocus
-              />
-              <input
-                className="input"
-                value={newForm.name}
-                onChange={(e) => setNewForm((f) => ({ ...f, name: e.target.value }))}
-                onKeyDown={handleNewKeyDown}
-                placeholder="name (optional)"
-                style={{ flex: 1 }}
-              />
-              <button className="btn btn-primary btn-sm" onClick={handleAdd}>Add</button>
-              <button
-                className="btn btn-ghost btn-sm"
-                onClick={() => { setAddingNew(false); setNewForm({ key: '', name: '' }) }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        ) : (
-          <button className="add-card-btn" onClick={() => setAddingNew(true)}>
-            <IconPlus /> Add table
-          </button>
-        )}
+        <AddCardForm
+          onAdd={handleAddTable}
+          addLabel="Add table"
+        />
       </div>
 
       <div className="page-footer-fixed">

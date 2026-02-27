@@ -1,12 +1,11 @@
 import { useState, useRef } from 'react'
 import { TagBadge } from './TagBadge'
 import { TagInput } from './TagInput'
-import { IconTrash } from '../shared/icons'
+import { DeleteConfirm } from '../shared/DeleteConfirm'
 
 export const LookupEntryRow = ({ entry, allTags, onUpdate, onDelete }) => {
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState(null)
-  const [confirmDelete, setConfirmDelete] = useState(false)
   const cancelledRef = useRef(false)
 
   const startEdit = () => {
@@ -84,37 +83,12 @@ export const LookupEntryRow = ({ entry, allTags, onUpdate, onDelete }) => {
       >
         {entry.url}
       </a>
-      <div
+      <DeleteConfirm
         className="lookup-entry-actions"
-        style={confirmDelete ? { opacity: 1 } : undefined}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {confirmDelete ? (
-          <div className="confirm-delete-inline">
-            <span className="confirm-text">Delete?</span>
-            <button
-              className="btn-yes"
-              onClick={(e) => { e.stopPropagation(); onDelete(entry.id) }}
-            >
-              Yes
-            </button>
-            <button
-              className="btn-no"
-              onClick={(e) => { e.stopPropagation(); setConfirmDelete(false) }}
-            >
-              No
-            </button>
-          </div>
-        ) : (
-          <button
-            className="icon-btn danger"
-            title="Delete entry"
-            onClick={(e) => { e.stopPropagation(); setConfirmDelete(true) }}
-          >
-            <IconTrash />
-          </button>
-        )}
-      </div>
+        onDelete={() => onDelete(entry.id)}
+        iconTitle="Delete entry"
+        stopPropagation
+      />
     </div>
   )
 }

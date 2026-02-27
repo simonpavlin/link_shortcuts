@@ -53,21 +53,6 @@ export const evaluateRules = (rules, param, params = {}) =>
     return { rule, matched, resultUrl }
   })
 
-/**
- * Finds the first matching rule for a given command + param and returns redirect URL.
- * @param {Array} shortcuts
- * @param {string} command
- * @param {string} param
- * @returns {{ found: boolean, url: string|null }}
- */
-export const resolveRedirect = (shortcuts, command, param) => {
-  const shortcut = shortcuts.find((s) => s.key === command)
-  if (!shortcut) return { found: false, url: null }
-
-  const firstMatch = evaluateRules(shortcut.rules, param).find((r) => r.matched)
-  return firstMatch ? { found: true, url: firstMatch.resultUrl } : { found: false, url: null }
-}
-
 // --- CRUD helpers (pure functions, return new arrays) ---
 
 export const createShortcut = ({ key = '', name = '' } = {}) => ({

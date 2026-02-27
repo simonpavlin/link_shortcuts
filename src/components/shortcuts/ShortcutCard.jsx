@@ -1,65 +1,10 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { evaluateRules } from '../../utils/shortcuts.utils'
+import { buildBrowserUrl } from '../../utils/url.utils'
+import { useInlineEdit } from '../../hooks/useInlineEdit'
 import { RuleList } from './RuleList'
-import { BrowserUrlBanner } from './BrowserUrlBanner'
-import { IconTrash, IconMoreDots, IconCopy } from '../shared/icons'
-
-// ── 3-dot menu with duplicate + delete confirmation ───────────────────────────
-const MoreMenu = ({ onDuplicate, onDelete }) => {
-  const [open, setOpen] = useState(false)
-  const [confirming, setConfirming] = useState(false)
-  const menuRef = useRef(null)
-
-  useEffect(() => {
-    if (!open) return
-    const handler = (e) => {
-      if (!menuRef.current?.contains(e.target)) {
-        setOpen(false)
-        setConfirming(false)
-      }
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [open])
-
-  return (
-    <div ref={menuRef} className="more-menu-wrap">
-      <button
-        className="icon-btn"
-        onClick={() => { setOpen((o) => !o); setConfirming(false) }}
-        title="More options"
-      >
-        <IconMoreDots />
-      </button>
-      {open && (
-        <div className="more-menu-dropdown">
-          <button
-            className="more-menu-item"
-            onClick={() => { onDuplicate(); setOpen(false) }}
-          >
-            <IconCopy /> Duplicate
-          </button>
-          {confirming ? (
-            <div className="more-menu-confirm">
-              <span>Delete?</span>
-              <button
-                className="btn-yes"
-                onClick={() => { onDelete(); setOpen(false); setConfirming(false) }}
-              >
-                Yes
-              </button>
-              <button className="btn-no" onClick={() => setConfirming(false)}>No</button>
-            </div>
-          ) : (
-            <button className="more-menu-item danger" onClick={() => setConfirming(true)}>
-              <IconTrash /> Delete
-            </button>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
+import { MoreMenu } from '../shared/MoreMenu'
+import { IconLink, IconCheck } from '../shared/icons'
 
 export const ShortcutCard = ({
   shortcut,
@@ -76,61 +21,26 @@ export const ShortcutCard = ({
 }) => {
   const [testParam, setTestParam] = useState('')
   const [testFocused, setTestFocused] = useState(false)
+  const [copied, setCopied] = useState(false)
 
-  // Inline key editing
-  const [editingKey, setEditingKey] = useState(false)
-  const [editKey, setEditKey] = useState(shortcut.key)
-  const keyDoneRef = useRef(false)
+  const keyEdit = useInlineEdit(
+    shortcut.key,
+    (trimmed) => onUpdate(shortcut.id, { key: trimmed, name: shortcut.name }),
+    { allowEmpty: false },
+  )
 
-  // Inline name editing (label above the card)
-  const [editingName, setEditingName] = useState(false)
-  const [editName, setEditName] = useState(shortcut.name)
-  const nameDoneRef = useRef(false)
+  const nameEdit = useInlineEdit(
+    shortcut.name,
+    (trimmed) => onUpdate(shortcut.id, { key: shortcut.key, name: trimmed }),
+    { allowEmpty: true },
+  )
 
-  // ── Key edit helpers ──────────────────────────────────────────────────────
-  const startKeyEdit = () => {
-    keyDoneRef.current = false
-    setEditKey(shortcut.key)
-    setEditingKey(true)
-  }
-
-  const commitKey = () => {
-    if (keyDoneRef.current) return
-    keyDoneRef.current = true
-    const trimmed = editKey.trim()
-    if (trimmed && trimmed !== shortcut.key) {
-      onUpdate(shortcut.id, { key: trimmed, name: shortcut.name })
-    }
-    setEditingKey(false)
-  }
-
-  const cancelKey = () => {
-    keyDoneRef.current = true
-    setEditKey(shortcut.key)
-    setEditingKey(false)
-  }
-
-  // ── Name edit helpers ─────────────────────────────────────────────────────
-  const startNameEdit = () => {
-    nameDoneRef.current = false
-    setEditName(shortcut.name)
-    setEditingName(true)
-  }
-
-  const commitName = () => {
-    if (nameDoneRef.current) return
-    nameDoneRef.current = true
-    const trimmed = editName.trim()
-    if (trimmed !== shortcut.name) {
-      onUpdate(shortcut.id, { key: shortcut.key, name: trimmed })
-    }
-    setEditingName(false)
-  }
-
-  const cancelName = () => {
-    nameDoneRef.current = true
-    setEditName(shortcut.name)
-    setEditingName(false)
+  // ── Copy browser URL ────────────────────────────────────────────────────
+  const handleCopy = () => {
+    navigator.clipboard.writeText(buildBrowserUrl(window.location.origin, shortcut.key)).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
   }
 
   // ── Rule test results ─────────────────────────────────────────────────────
@@ -161,15 +71,15 @@ export const ShortcutCard = ({
     >
       {/* Name label above the card */}
       <div className="shortcut-card-label">
-        {editingName ? (
+        {nameEdit.editing ? (
           <input
             className="shortcut-card-label-input"
-            value={editName}
-            onChange={(e) => setEditName(e.target.value)}
-            onBlur={commitName}
+            value={nameEdit.editValue}
+            onChange={(e) => nameEdit.setEditValue(e.target.value)}
+            onBlur={nameEdit.commitEdit}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') { e.preventDefault(); commitName() }
-              if (e.key === 'Escape') cancelName()
+              if (e.key === 'Enter') { e.preventDefault(); nameEdit.commitEdit() }
+              if (e.key === 'Escape') nameEdit.cancelEdit()
             }}
             placeholder="name"
             autoFocus
@@ -177,13 +87,13 @@ export const ShortcutCard = ({
         ) : shortcut.name ? (
           <span
             className="shortcut-card-label-text editable"
-            onClick={startNameEdit}
+            onClick={nameEdit.startEdit}
             title="Click to edit name"
           >
             {shortcut.name}
           </span>
         ) : (
-          <span className="shortcut-card-label-ghost" onClick={startNameEdit}>
+          <span className="shortcut-card-label-ghost" onClick={nameEdit.startEdit}>
             add name
           </span>
         )}
@@ -192,22 +102,22 @@ export const ShortcutCard = ({
       <div className={`shortcut-card${isTesting && !hasNoMatch ? ' card-global-match' : ''}${isTesting && hasNoMatch ? ' card-no-match' : ''}`}>
         <div className="shortcut-card-header">
           {/* Key badge – click to edit inline */}
-          {editingKey ? (
+          {keyEdit.editing ? (
             <input
               className="shortcut-key-badge shortcut-key-input"
-              value={editKey}
-              onChange={(e) => setEditKey(e.target.value)}
-              onBlur={commitKey}
+              value={keyEdit.editValue}
+              onChange={(e) => keyEdit.setEditValue(e.target.value)}
+              onBlur={keyEdit.commitEdit}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') { e.preventDefault(); commitKey() }
-                if (e.key === 'Escape') cancelKey()
+                if (e.key === 'Enter') { e.preventDefault(); keyEdit.commitEdit() }
+                if (e.key === 'Escape') keyEdit.cancelEdit()
               }}
               autoFocus
             />
           ) : (
             <span
               className="shortcut-key-badge shortcut-key-badge--editable"
-              onClick={startKeyEdit}
+              onClick={keyEdit.startEdit}
               title="Click to edit key"
             >
               {shortcut.key}
@@ -224,7 +134,14 @@ export const ShortcutCard = ({
             placeholder="test…"
           />
 
-          <BrowserUrlBanner shortcutKey={shortcut.key} />
+          <button
+            className={`url-copy-btn${copied ? ' copied' : ''}`}
+            onClick={handleCopy}
+            title="Copy browser search engine URL"
+          >
+            {copied ? <IconCheck /> : <IconLink />}
+            {copied ? 'Copied' : 'Browser URL'}
+          </button>
 
           <div className="header-actions">
             <MoreMenu
