@@ -55,20 +55,20 @@ export const AdminView = ({ prefillCommand, prefillParam }) => {
   }
 
   return (
-    <div className="admin-page module-shortcuts">
+    <div className="admin-page module-go">
 
       <div className="page-hero">
         <div className="page-hero-eyebrow">
           <span className="page-hero-line" />
-          shortcuts
+          go
           <span className="page-hero-line" />
         </div>
         <h1 className="page-hero-title">
-          Regex <span className="page-hero-accent">Rules</span>
+          Redirect <span className="page-hero-accent">Conditions</span>
         </h1>
         <p className="page-hero-desc">
-          Map <strong>command keys</strong> to URL patterns via regex rules.
-          Navigate to <strong>?q=shortcuts+key+value</strong> to redirect instantly.
+          Define regex-based conditions that map a key and input to a destination URL.
+          Use <strong>?q=go key value</strong> to redirect instantly.
         </p>
       </div>
 

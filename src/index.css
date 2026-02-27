@@ -43,8 +43,8 @@ html { zoom: 1.25; }
    Each module sets --accent-1 + --accent-1-rgb on its root element.
    All rgba(var(--accent-1-rgb), α) calls below pick it up automatically.
    ===================================================== */
-.module-shortcuts { --accent-1: #0078d4; --accent-1-rgb: 0, 120, 212; }
-.module-lookup    { --accent-1: #7c3aed; --accent-1-rgb: 124, 58, 237; }
+.module-go   { --accent-1: #0078d4; --accent-1-rgb: 0, 120, 212; }
+.module-find { --accent-1: #7c3aed; --accent-1-rgb: 124, 58, 237; }
 
 /* =====================================================
    LIGHT MODE OVERRIDES
@@ -217,12 +217,21 @@ a:hover { text-decoration: underline; }
   font-size: 11px;
   padding: 3px 8px;
   border-radius: var(--radius-sm);
-  color: var(--text-muted);
+  color: var(--text-secondary);
   letter-spacing: 0.04em;
   transition: color var(--t), background var(--t);
 }
 .nav-link:hover { color: var(--text-secondary); background: var(--surface-hover); text-decoration: none; }
 .nav-link.active { color: var(--text); background: var(--surface-active); }
+.nav-link-cmd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  margin-left: 5px;
+  opacity: 0.85;
+}
+.nav-link-cmd--go   { color: #0078d4; }
+.nav-link-cmd--find { color: #7c3aed; }
+.nav-link.active .nav-link-cmd { opacity: 1; }
 
 .layout-content {
   flex: 1;
@@ -1837,19 +1846,19 @@ select.input option { background: #1a1a24; color: var(--text); }
 .eval-step--parse .eval-step-label { color: var(--text-label); font-weight: 500; min-width: auto; }
 .eval-step--parse { gap: 1ch; }
 .eval-step--parse .eval-step-desc  { color: var(--text-muted); }
-.eval-step--parse.eval-module-shortcuts .eval-step-label { color: #0078d4; }
-.eval-step--parse.eval-module-lookup    .eval-step-label { color: #7c3aed; }
+.eval-step--parse.eval-module-go   .eval-step-label { color: #0078d4; }
+.eval-step--parse.eval-module-find .eval-step-label { color: #7c3aed; }
 
 /* Child steps — indented one level under their parse block */
 .eval-step--child { padding-left: 28px; gap: 1ch; }
 .eval-step--child .eval-step-label { min-width: auto; }
-.eval-step--child.eval-module-shortcuts { background: rgba(0, 120, 212, 0.04); }
-.eval-step--child.eval-module-lookup    { background: rgba(124, 58, 237, 0.04); }
+.eval-step--child.eval-module-go   { background: rgba(0, 120, 212, 0.04); }
+.eval-step--child.eval-module-find { background: rgba(124, 58, 237, 0.04); }
 
 /* Child-2 steps — arg / result rows at level 2 */
 .eval-step--child-2 { padding-left: 52px; }
-.eval-step--child-2.eval-module-shortcuts { background: rgba(0, 120, 212, 0.04); }
-.eval-step--child-2.eval-module-lookup    { background: rgba(124, 58, 237, 0.04); }
+.eval-step--child-2.eval-module-go   { background: rgba(0, 120, 212, 0.04); }
+.eval-step--child-2.eval-module-find { background: rgba(124, 58, 237, 0.04); }
 .eval-step--child-2 .eval-step-label { min-width: auto; margin-right: 10px; color: var(--text-muted); }
 
 /* Return rows — IconReturn icon */
@@ -1857,8 +1866,8 @@ select.input option { background: #1a1a24; color: var(--text); }
 
 /* Collapsible blocks */
 .eval-step--collapsible { cursor: pointer; user-select: none; }
-.eval-step--collapsible:hover.eval-module-shortcuts { background: rgba(0, 120, 212, 0.08); }
-.eval-step--collapsible:hover.eval-module-lookup    { background: rgba(124, 58, 237, 0.08); }
+.eval-step--collapsible:hover.eval-module-go   { background: rgba(0, 120, 212, 0.08); }
+.eval-step--collapsible:hover.eval-module-find { background: rgba(124, 58, 237, 0.08); }
 .eval-chevron { transition: transform 0.12s; color: var(--text-muted); margin-left: auto; flex-shrink: 0; }
 .eval-chevron--collapsed { transform: rotate(-90deg); }
 .eval-collapsed-count { margin-left: 8px; color: var(--text-muted); }
@@ -1879,10 +1888,10 @@ select.input option { background: #1a1a24; color: var(--text); }
 .eval-step--action.eval-step--no-match .eval-step-label { color: var(--danger); }
 
 [data-theme="light"] .eval-step--parse { background: rgba(0, 0, 0, 0.025); }
-[data-theme="light"] .eval-step--child.eval-module-shortcuts { background: rgba(0, 120, 212, 0.05); }
-[data-theme="light"] .eval-step--child.eval-module-lookup    { background: rgba(124, 58, 237, 0.05); }
-[data-theme="light"] .eval-step--child-2.eval-module-shortcuts { background: rgba(0, 120, 212, 0.05); }
-[data-theme="light"] .eval-step--child-2.eval-module-lookup    { background: rgba(124, 58, 237, 0.05); }
+[data-theme="light"] .eval-step--child.eval-module-go   { background: rgba(0, 120, 212, 0.05); }
+[data-theme="light"] .eval-step--child.eval-module-find { background: rgba(124, 58, 237, 0.05); }
+[data-theme="light"] .eval-step--child-2.eval-module-go   { background: rgba(0, 120, 212, 0.05); }
+[data-theme="light"] .eval-step--child-2.eval-module-find { background: rgba(124, 58, 237, 0.05); }
 
 /* Inline picker below trace */
 .home-picker {

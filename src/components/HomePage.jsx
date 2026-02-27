@@ -209,7 +209,7 @@ export const HomePage = ({ initialQ = '' }) => {
         <input
           type="text"
           className="home-input"
-          placeholder="shortcuts mr 1234"
+          placeholder="go mr 1234"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}

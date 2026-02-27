@@ -44,19 +44,19 @@ export const LookupAdminView = () => {
   }
 
   return (
-    <div className="admin-page module-lookup">
+    <div className="admin-page module-find">
       <div className="page-hero">
         <div className="page-hero-eyebrow">
           <span className="page-hero-line" />
-          lookup
+          find
           <span className="page-hero-line" />
         </div>
         <h1 className="page-hero-title">
-          Lookup <span className="page-hero-accent">Tables</span>
+          Tagged <span className="page-hero-accent">Tables</span>
         </h1>
         <p className="page-hero-desc">
-          Create <strong>tagged entries</strong> and link them to URLs.
-          Navigate to <strong>?q=lookup+key+tag1+tag2</strong> to find and jump to matching links.
+          Organize entries with tags and link them to URLs.
+          Use <strong>?q=find key tag1 tag2</strong> to jump to matching results.
         </p>
       </div>
 

@@ -37,16 +37,16 @@ export const Layout = ({ children }) => {
           <NavLink to="/" className="layout-logo">Linker</NavLink>
           <nav className="layout-nav">
             <NavLink
-              to="/shortcuts/"
+              to="/go/"
               className={({ isActive }) => 'nav-link' + (isActive ? ' active' : '')}
             >
-              Shortcuts
+              Conditions<span className="nav-link-cmd nav-link-cmd--go">[go]</span>
             </NavLink>
             <NavLink
-              to="/lookup/"
+              to="/find/"
               className={({ isActive }) => 'nav-link' + (isActive ? ' active' : '')}
             >
-              Lookup
+              Tables<span className="nav-link-cmd nav-link-cmd--find">[find]</span>
             </NavLink>
           </nav>
           <div style={{ flex: 1 }} />

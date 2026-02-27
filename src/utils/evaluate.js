@@ -46,19 +46,19 @@ function evaluateStep(rawQ, shortcuts, tables, steps, depth, origin) {
   // Sentinel: ?q=shortcuts+mr+?
   if (param === '?') {
     const to =
-      module === 'lookup'
-        ? `/lookup/${command ? `?key=${encodeURIComponent(command)}` : ''}`
-        : `/shortcuts/${command ? `?key=${encodeURIComponent(command)}` : ''}`
+      module === 'find'
+        ? `/find/${command ? `?key=${encodeURIComponent(command)}` : ''}`
+        : `/go/${command ? `?key=${encodeURIComponent(command)}` : ''}`
     steps.push({ type: 'sentinel', navigateTo: to, depth })
     return { type: 'navigate', to }
   }
 
-  // Shortcuts module
-  if (module === 'shortcuts' && command && param) {
+  // Go (shortcuts) module
+  if (module === 'go' && command && param) {
     const shortcut = shortcuts.find((s) => s.key === command)
     if (!shortcut) {
       steps.push({ type: 'shortcut_not_found', command, depth })
-      return { type: 'navigate', to: `/shortcuts/?key=${encodeURIComponent(command)}` }
+      return { type: 'navigate', to: `/go/?key=${encodeURIComponent(command)}` }
     }
 
     steps.push({ type: 'shortcut_found', shortcut, depth })
@@ -88,15 +88,15 @@ function evaluateStep(rawQ, shortcuts, tables, steps, depth, origin) {
       return { type: 'redirect', url: resolved }
     }
 
-    return { type: 'navigate', to: `/shortcuts/?key=${encodeURIComponent(command)}` }
+    return { type: 'navigate', to: `/go/?key=${encodeURIComponent(command)}` }
   }
 
-  // Lookup module
-  if (module === 'lookup' && command && param) {
+  // Find (lookup) module
+  if (module === 'find' && command && param) {
     const table = findTable(tables, command)
     if (!table) {
       steps.push({ type: 'lookup_not_found', command, depth })
-      return { type: 'navigate', to: `/lookup/?key=${encodeURIComponent(command)}` }
+      return { type: 'navigate', to: `/find/?key=${encodeURIComponent(command)}` }
     }
 
     steps.push({ type: 'lookup_found', table, depth })
@@ -106,7 +106,7 @@ function evaluateStep(rawQ, shortcuts, tables, steps, depth, origin) {
 
     if (entries.length === 0) {
       steps.push({ type: 'lookup_no_match', table, tags, depth })
-      return { type: 'navigate', to: `/lookup/?key=${encodeURIComponent(command)}` }
+      return { type: 'navigate', to: `/find/?key=${encodeURIComponent(command)}` }
     }
 
     if (entries.length === 1) {
@@ -126,7 +126,7 @@ function evaluateStep(rawQ, shortcuts, tables, steps, depth, origin) {
 
   // Module present but no command/param → go to admin
   if (module) {
-    return { type: 'navigate', to: module === 'lookup' ? '/lookup/' : '/shortcuts/' }
+    return { type: 'navigate', to: module === 'find' ? '/find/' : '/go/' }
   }
 
   return { type: 'none' }

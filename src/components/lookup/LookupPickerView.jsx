@@ -4,7 +4,7 @@ import { IconArrowRight } from '../shared/icons'
 import { resolveUrl } from '../../utils/url.utils'
 
 export const LookupPickerView = ({ table, entries, tags }) => (
-  <div className="lookup-picker-page module-lookup">
+  <div className="lookup-picker-page module-find">
     <div className="lookup-picker-header">
       <div className="page-hero-eyebrow">
         <span className="page-hero-line" />
@@ -39,7 +39,7 @@ export const LookupPickerView = ({ table, entries, tags }) => (
       ))}
     </div>
 
-    <NavLink to="/lookup/" className="lookup-picker-back">
+    <NavLink to="/find/" className="lookup-picker-back">
       ← Manage tables
     </NavLink>
   </div>

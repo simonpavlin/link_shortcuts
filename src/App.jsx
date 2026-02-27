@@ -9,8 +9,8 @@ export const App = () => (
     <Layout>
       <Routes>
         <Route path="/" element={<CommandRouter />} />
-        <Route path="/shortcuts/*" element={<ShortcutsPage />} />
-        <Route path="/lookup/*" element={<LookupPage />} />
+        <Route path="/go/*" element={<ShortcutsPage />} />
+        <Route path="/find/*" element={<LookupPage />} />
       </Routes>
     </Layout>
   </BrowserRouter>
