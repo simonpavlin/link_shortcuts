@@ -73,10 +73,14 @@ const EvalTrace = ({ steps, result }) => {
     if (step.type === 'parse') {
       currentModule = step.module
       const mCls = step.module ? `eval-module-${step.module}` : ''
+      const paramsObj = step.params ?? step.flags ?? {}
+      const paramStr = Object.keys(paramsObj).length
+        ? ' ' + Object.entries(paramsObj).map(([k, v]) => `--${k}=${v}`).join(' ')
+        : ''
       items.push({ kind: 'flat', id: `p${i}`, row:
         <div key={i} className={`eval-step eval-step--parse ${mCls}`}>
           <span className="eval-step-label">{step.module ?? '—'}</span>
-          <span className="eval-step-desc">{step.command ?? '—'} {step.param ?? '—'}</span>
+          <span className="eval-step-desc">{step.command ?? '—'} {step.param ?? '—'}{paramStr && <span className="eval-url-muted">{paramStr}</span>}</span>
         </div>
       })
       continue
@@ -234,6 +238,7 @@ export const HomePage = ({ initialQ = '' }) => {
             table={result.table}
             entries={result.entries}
             tags={result.tags ?? []}
+            params={result.params ?? {}}
           />
         </div>
       )}

@@ -28,9 +28,19 @@ export const CommandRouter = () => {
 
   const rawQ = searchParams.get('q') ?? ''
 
+  // Collect all non-q query params as named URL parameters
+  const urlParams = useMemo(() => {
+    const params = {}
+    for (const [key, value] of searchParams.entries()) {
+      if (key !== 'q') params[key] = value
+    }
+    return params
+  }, [searchParams])
+  const urlParamsStr = JSON.stringify(urlParams)
+
   const { result } = useMemo(
-    () => evaluateQuery(rawQ, readShortcuts(), readTables(), window.location.origin),
-    [rawQ],
+    () => evaluateQuery(rawQ, readShortcuts(), readTables(), window.location.origin, urlParams),
+    [rawQ, urlParamsStr], // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   useEffect(() => {
@@ -49,6 +59,7 @@ export const CommandRouter = () => {
         table={pickerData.table}
         entries={pickerData.entries}
         tags={pickerData.tags}
+        params={pickerData.params ?? {}}
       />
     )
   }

@@ -2,8 +2,9 @@ import { NavLink } from 'react-router-dom'
 import { TagBadge } from './TagBadge'
 import { IconArrowRight } from '../shared/icons'
 import { resolveUrl } from '../../utils/url.utils'
+import { interpolateParams } from '../../utils/shortcuts.utils'
 
-export const LookupPickerView = ({ table, entries, tags }) => (
+export const LookupPickerView = ({ table, entries, tags, params = {} }) => (
   <div className="lookup-picker-page module-find">
     <div className="lookup-picker-header">
       <div className="page-hero-eyebrow">
@@ -23,7 +24,7 @@ export const LookupPickerView = ({ table, entries, tags }) => (
       {entries.map((entry, i) => (
         <a
           key={entry.id}
-          href={resolveUrl(entry.url)}
+          href={resolveUrl(interpolateParams(entry.url, params))}
           className="lookup-picker-item"
           style={{ animationDelay: `${i * 0.06}s` }}
         >

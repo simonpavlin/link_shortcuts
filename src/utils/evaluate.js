@@ -1,15 +1,32 @@
-import { evaluateRules } from './shortcuts.utils'
+import { evaluateRules, interpolateParams } from './shortcuts.utils'
 import { findTable, searchEntries } from './lookup.utils'
 import { resolveUrl } from './url.utils'
 
 const MAX_DEPTH = 5
+const FLAG_RE = /^--([a-zA-Z_][\w-]*)=(.*)$/
+
+function parseFlags(tokens) {
+  const plainTokens = []
+  const flags = {}
+  for (const token of tokens) {
+    const m = FLAG_RE.exec(token)
+    if (m) {
+      flags[m[1]] = m[2]
+    } else {
+      plainTokens.push(token)
+    }
+  }
+  return { plainTokens, flags }
+}
 
 function parseRawQ(rawQ) {
   const parts = rawQ.split(' ')
+  const { plainTokens, flags } = parseFlags(parts.slice(2))
   return {
     module: parts[0] || null,
     command: parts[1] || null,
-    param: parts.slice(2).join(' ') || null,
+    param: plainTokens.length ? plainTokens.join(' ') : null,
+    flags,
   }
 }
 
@@ -35,13 +52,16 @@ function extractChainQ(resolved, origin) {
   return null
 }
 
-function evaluateStep(rawQ, shortcuts, tables, steps, depth, origin) {
+function evaluateStep(rawQ, shortcuts, tables, steps, depth, origin, urlParams = {}) {
   if (depth > MAX_DEPTH) {
     return { type: 'error', message: 'Max chain depth reached (possible cycle)' }
   }
 
-  const { module, command, param } = parseRawQ(rawQ)
-  steps.push({ type: 'parse', module, command, param, depth })
+  const { module, command, param, flags } = parseRawQ(rawQ)
+  // Inherited params (urlParams at depth 0, parent params at depth 1+) merged with local flags (flags win)
+  const params = { ...urlParams, ...flags }
+
+  steps.push({ type: 'parse', module, command, param, flags, params, depth })
 
   // Sentinel: ?q=shortcuts+mr+?
   if (param === '?') {
@@ -54,7 +74,7 @@ function evaluateStep(rawQ, shortcuts, tables, steps, depth, origin) {
   }
 
   // Go (shortcuts) module
-  if (module === 'go' && command && param) {
+  if (module === 'go' && command && (param != null || Object.keys(params).length)) {
     const shortcut = shortcuts.find((s) => s.key === command)
     if (!shortcut) {
       steps.push({ type: 'shortcut_not_found', command, depth })
@@ -63,11 +83,11 @@ function evaluateStep(rawQ, shortcuts, tables, steps, depth, origin) {
 
     steps.push({ type: 'shortcut_found', shortcut, depth })
 
-    let processedParam = param
+    let processedParam = param ?? ''
     if (shortcut.trimInput) processedParam = processedParam.trim()
     if (shortcut.lowercaseInput) processedParam = processedParam.toLowerCase()
 
-    const results = evaluateRules(shortcut.rules, processedParam)
+    const results = evaluateRules(shortcut.rules, processedParam, params)
     let match = null
     for (const r of results) {
       if (r.matched) {
@@ -83,7 +103,7 @@ function evaluateStep(rawQ, shortcuts, tables, steps, depth, origin) {
       const nextQ = extractChainQ(resolved, origin)
       if (nextQ !== null) {
         steps.push({ type: 'chain', fromRaw: match.resultUrl, toQuery: nextQ, depth })
-        return evaluateStep(nextQ, shortcuts, tables, steps, depth + 1, origin)
+        return evaluateStep(nextQ, shortcuts, tables, steps, depth + 1, origin, params)
       }
       return { type: 'redirect', url: resolved }
     }
@@ -92,7 +112,7 @@ function evaluateStep(rawQ, shortcuts, tables, steps, depth, origin) {
   }
 
   // Find (lookup) module
-  if (module === 'find' && command && param) {
+  if (module === 'find' && command && (param != null || Object.keys(params).length)) {
     const table = findTable(tables, command)
     if (!table) {
       steps.push({ type: 'lookup_not_found', command, depth })
@@ -101,7 +121,7 @@ function evaluateStep(rawQ, shortcuts, tables, steps, depth, origin) {
 
     steps.push({ type: 'lookup_found', table, depth })
 
-    const tags = param.split(' ').filter(Boolean)
+    const tags = param ? param.split(' ').filter(Boolean) : []
     const entries = searchEntries(table, tags)
 
     if (entries.length === 0) {
@@ -111,17 +131,18 @@ function evaluateStep(rawQ, shortcuts, tables, steps, depth, origin) {
 
     if (entries.length === 1) {
       steps.push({ type: 'lookup_match', table, entry: entries[0], tags, depth })
-      const resolved = resolveUrl(entries[0].url)
+      const entryUrl = interpolateParams(entries[0].url, params)
+      const resolved = resolveUrl(entryUrl)
       const nextQ = extractChainQ(resolved, origin)
       if (nextQ !== null) {
-        steps.push({ type: 'chain', fromRaw: entries[0].url, toQuery: nextQ, depth })
-        return evaluateStep(nextQ, shortcuts, tables, steps, depth + 1, origin)
+        steps.push({ type: 'chain', fromRaw: entryUrl, toQuery: nextQ, depth })
+        return evaluateStep(nextQ, shortcuts, tables, steps, depth + 1, origin, params)
       }
       return { type: 'redirect', url: resolved }
     }
 
     steps.push({ type: 'lookup_multi', table, entries, tags, depth })
-    return { type: 'picker', table, entries, tags }
+    return { type: 'picker', table, entries, tags, params }
   }
 
   // Module present but no command/param → go to admin
@@ -140,10 +161,10 @@ function evaluateStep(rawQ, shortcuts, tables, steps, depth, origin) {
  * @param {string} [origin] – window.location.origin, used to detect same-origin chain URLs
  * @returns {{ steps: Array, result: Object }}
  */
-export function evaluateQuery(rawQ, shortcuts, tables, origin = '') {
+export function evaluateQuery(rawQ, shortcuts, tables, origin = '', urlParams = {}) {
   const trimmed = rawQ?.trim() ?? ''
   if (!trimmed) return { steps: [], result: { type: 'none' } }
   const steps = []
-  const result = evaluateStep(trimmed, shortcuts, tables, steps, 0, origin)
+  const result = evaluateStep(trimmed, shortcuts, tables, steps, 0, origin, urlParams)
   return { steps, result }
 }

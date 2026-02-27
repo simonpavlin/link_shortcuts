@@ -10,12 +10,30 @@ export const PATTERN_TYPES = {
 }
 
 /**
+ * Replaces ${name} placeholders in a URL template with values from params.
+ * Runs iteratively so that resolved values containing ${other} get resolved too.
+ * Unknown ${name} are left as-is (debugging aid).
+ */
+export const interpolateParams = (template, params) => {
+  let result = template
+  for (let i = 0; i < 10; i++) {
+    const next = result.replace(/\$\{(\w+)\}/g, (match, name) =>
+      name in params ? params[name] : match,
+    )
+    if (next === result) break
+    result = next
+  }
+  return result
+}
+
+/**
  * Evaluates all rules against a param and returns results for each rule.
  * @param {Array} rules
  * @param {string} param
+ * @param {Object} [params={}] – named parameters for ${name} interpolation
  * @returns {Array<{rule, matched: boolean, resultUrl: string|null}>}
  */
-export const evaluateRules = (rules, param) =>
+export const evaluateRules = (rules, param, params = {}) =>
   rules.map((rule) => {
     let matched = false
     let resultUrl = null
@@ -27,7 +45,7 @@ export const evaluateRules = (rules, param) =>
         matched = regex.test(param)
       }
       if (matched) {
-        resultUrl = rule.url.replace('%s', encodeURIComponent(param))
+        resultUrl = interpolateParams(rule.url, params).replace('%s', encodeURIComponent(param))
       }
     } catch {
       matched = false
