@@ -4,7 +4,15 @@
       "Bash(npm install react-router-dom @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities uuid 2>&1)",
       "Bash(npm run build 2>&1)",
       "Bash(npx vite build 2>&1 | tail -20)",
-      "Bash(npx vite build 2>&1 | tail -5)"
+      "Bash(npx vite build 2>&1 | tail -5)",
+      "Bash(find /mnt/c/Users/simip/Workspaces/projects/link_shortcuts -maxdepth 1 -type f \\\\\\( -name \".*config*\" -o -name \"tsconfig*\" \\\\\\) 2>/dev/null | grep -v node_modules)",
+      "Bash(ls -la /mnt/c/Users/simip/Workspaces/projects/link_shortcuts/.* 2>/dev/null | head -20)",
+      "Bash(npm install --save-dev typescript @types/react @types/react-dom @types/uuid 2>&1)",
+      "Bash(cd /mnt/c/Users/simip/Workspaces/projects/link_shortcuts && npx tsc --noEmit --pretty 2>&1 | grep -E \"^src/components/shared/\\(DeleteConfirm|AddCardForm|GlobalTestInput|DataPorter|Layout\\)\\\\.tsx\")",
+      "Bash(cd /mnt/c/Users/simip/Workspaces/projects/link_shortcuts && npx tsc --noEmit 2>&1 | head -80)",
+      "Bash(cd /mnt/c/Users/simip/Workspaces/projects/link_shortcuts && npx tsc --noEmit 2>&1 | grep -E \"shortcuts/\\(ShortcutCard|RuleRow|RuleList|AdminView|ShortcutsPage\\)\" || echo \"No errors in shortcuts components\")",
+      "Bash(cd /mnt/c/Users/simip/Workspaces/projects/link_shortcuts && npx tsc --noEmit 2>&1)",
+      "Bash(cd /mnt/c/Users/simip/Workspaces/projects/link_shortcuts && npx vite build 2>&1 | tail -20)"
     ]
   }
 }

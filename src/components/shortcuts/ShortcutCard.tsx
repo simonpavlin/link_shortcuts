@@ -5,6 +5,21 @@ import { useInlineEdit } from '../../hooks/useInlineEdit'
 import { RuleList } from './RuleList'
 import { MoreMenu } from '../shared/MoreMenu'
 import { IconLink, IconCheck } from '../shared/icons'
+import type { Shortcut, Rule } from '../../utils/shortcuts.utils'
+
+type Props = {
+  shortcut: Shortcut
+  animationDelay?: number
+  globalCommand: string | null
+  globalParam: string | null
+  onUpdate: (id: string, data: { key: string; name: string }) => void
+  onDelete: (id: string) => void
+  onDuplicate: (id: string) => void
+  onAddRule: (shortcutId: string, ruleData: Partial<Rule>) => void
+  onUpdateRule: (shortcutId: string, ruleId: string, ruleData: Partial<Rule>) => void
+  onDeleteRule: (shortcutId: string, ruleId: string) => void
+  onReorderRules: (shortcutId: string, newRules: Rule[]) => void
+}
 
 export const ShortcutCard = ({
   shortcut,
@@ -18,7 +33,7 @@ export const ShortcutCard = ({
   onUpdateRule,
   onDeleteRule,
   onReorderRules,
-}) => {
+}: Props) => {
   const [testParam, setTestParam] = useState('')
   const [testFocused, setTestFocused] = useState(false)
   const [copied, setCopied] = useState(false)

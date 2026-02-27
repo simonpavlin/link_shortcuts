@@ -7,6 +7,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
+import type { DragEndEvent } from '@dnd-kit/core'
 import {
   SortableContext,
   sortableKeyboardCoordinates,
@@ -16,8 +17,16 @@ import {
 import { PATTERN_TYPES } from '../../utils/shortcuts.utils'
 import { RuleRow, PatternField } from './RuleRow'
 import { IconArrowRight } from '../shared/icons'
+import type { Rule, RuleResult, PatternTypeName } from '../../utils/shortcuts.utils'
 
-const makeEmpty = (newId) => ({
+type PendingRow = {
+  id: number
+  patternType: PatternTypeName | null
+  pattern: string
+  url: string
+}
+
+const makeEmpty = (newId: () => number): PendingRow => ({
   id: newId(),
   patternType: null,
   pattern: '',
@@ -25,13 +34,17 @@ const makeEmpty = (newId) => ({
 })
 
 // ── Auto-expanding pending rows for adding new rules ─────────────────────────
-const PendingRows = ({ onAdd }) => {
+type PendingRowsProps = {
+  onAdd: (data: { pattern: string; url: string; patternType: PatternTypeName; label: string }) => void
+}
+
+const PendingRows = ({ onAdd }: PendingRowsProps) => {
   const rowIdRef = useRef(1)
   const newId = () => ++rowIdRef.current
 
-  const [rows, setRows] = useState([{ id: 0, patternType: null, pattern: '', url: '' }])
+  const [rows, setRows] = useState<PendingRow[]>([{ id: 0, patternType: null, pattern: '', url: '' }])
 
-  const handleUrlChange = (id, value) => {
+  const handleUrlChange = (id: number, value: string) => {
     setRows((prev) => {
       const next = prev.map((r) => (r.id === id ? { ...r, url: value } : r))
       const changedIdx = next.findIndex((r) => r.id === id)
@@ -41,17 +54,17 @@ const PendingRows = ({ onAdd }) => {
     })
   }
 
-  const handlePatternChange = (id, { patternType, pattern }) => {
+  const handlePatternChange = (id: number, { patternType, pattern }: { patternType: PatternTypeName; pattern: string }) => {
     setRows((prev) => prev.map((r) => r.id === id ? { ...r, patternType, pattern } : r))
   }
 
   // Read rows directly (safe in event handlers — state is current by the time events fire)
   // and call onAdd outside any state updater to avoid side-effects in render phase
-  const commitRow = (id) => {
+  const commitRow = (id: number) => {
     const row = rows.find((r) => r.id === id)
     if (!row?.url.trim()) return
 
-    const patternType = row.patternType ?? 'number'
+    const patternType: PatternTypeName = row.patternType ?? 'number'
     const pattern = row.pattern || (PATTERN_TYPES[patternType]?.pattern ?? '')
     onAdd({
       pattern,
@@ -68,7 +81,7 @@ const PendingRows = ({ onAdd }) => {
     })
   }
 
-  const clearRow = (id) => {
+  const clearRow = (id: number) => {
     setRows((prev) => {
       const row = prev.find((r) => r.id === id)
       if (!row) return prev
@@ -86,11 +99,11 @@ const PendingRows = ({ onAdd }) => {
   return (
     <div className="pending-rows">
       {rows.map((row) => {
-        const handleKeyDown = (e) => {
+        const handleKeyDown = (e: React.KeyboardEvent) => {
           if (e.key === 'Enter' || ((e.ctrlKey || e.metaKey) && e.key === 's')) { e.preventDefault(); commitRow(row.id) }
           if (e.key === 'Escape') clearRow(row.id)
         }
-        const handleBlur = (e) => {
+        const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
           if (e.currentTarget.contains(e.relatedTarget)) return
           commitRow(row.id)
         }
@@ -123,6 +136,16 @@ const PendingRows = ({ onAdd }) => {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
+type Props = {
+  rules: Rule[]
+  testResults: Record<string, RuleResult> | null
+  testParam: string
+  onReorder: (newRules: Rule[]) => void
+  onAdd: (ruleData: Partial<Rule>) => void
+  onUpdate: (ruleId: string, ruleData: Partial<Rule>) => void
+  onDelete: (ruleId: string) => void
+}
+
 export const RuleList = ({
   rules,
   testResults,
@@ -131,13 +154,13 @@ export const RuleList = ({
   onAdd,
   onUpdate,
   onDelete,
-}) => {
+}: Props) => {
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
-  const handleDragEnd = ({ active, over }) => {
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
     if (!over || active.id === over.id) return
     const oldIndex = rules.findIndex((r) => r.id === active.id)
     const newIndex = rules.findIndex((r) => r.id === over.id)

@@ -14,12 +14,18 @@ import { ShortcutCard } from './ShortcutCard'
 import { DataPorter } from '../shared/DataPorter'
 import { GlobalTestInput } from '../shared/GlobalTestInput'
 import { AddCardForm } from '../shared/AddCardForm'
+import type { Shortcut } from '../../utils/shortcuts.utils'
 
 const STORAGE_KEY = 'linker_shortcuts'
-const INITIAL = { shortcuts: [] }
+const INITIAL: { shortcuts: Shortcut[] } = { shortcuts: [] }
 
-export const AdminView = ({ prefillCommand, prefillParam }) => {
-  const [data, setData] = useLocalStorage(STORAGE_KEY, INITIAL)
+type Props = {
+  prefillCommand: string
+  prefillParam: string
+}
+
+export const AdminView = ({ prefillCommand, prefillParam }: Props) => {
+  const [data, setData] = useLocalStorage<{ shortcuts: Shortcut[] }>(STORAGE_KEY, INITIAL)
 
   // Global test field – initialised from URL params if present
   const [globalTestInput, setGlobalTestInput] = useState(() => {
@@ -29,7 +35,7 @@ export const AdminView = ({ prefillCommand, prefillParam }) => {
   const [globalFocused, setGlobalFocused] = useState(!!prefillCommand)
 
   const { shortcuts } = data
-  const mutate = (newShortcuts) => setData({ shortcuts: newShortcuts })
+  const mutate = (newShortcuts: Shortcut[]) => setData({ shortcuts: newShortcuts })
 
   // Parse global test into command + param (split on first space)
   const spaceIdx = globalTestInput.indexOf(' ')
@@ -40,7 +46,7 @@ export const AdminView = ({ prefillCommand, prefillParam }) => {
     ? null
     : globalTestInput.slice(spaceIdx + 1)
 
-  const handleAddShortcut = (form) => {
+  const handleAddShortcut = (form: { key: string; name: string }) => {
     const result = addShortcut(shortcuts, form)
     mutate(result.shortcuts)
   }
@@ -110,7 +116,7 @@ export const AdminView = ({ prefillCommand, prefillParam }) => {
           data={shortcuts}
           dataKey="shortcuts"
           filename="linker-shortcuts.json"
-          onImport={(newShortcuts) => mutate(newShortcuts)}
+          onImport={(newShortcuts) => mutate(newShortcuts as Shortcut[])}
         />
       </div>
     </div>

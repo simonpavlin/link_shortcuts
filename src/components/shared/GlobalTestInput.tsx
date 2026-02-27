@@ -1,6 +1,14 @@
 import { IconX } from './icons'
 
-export const GlobalTestInput = ({ value, onChange, placeholder, onFocus, onBlur }) => (
+type Props = {
+  value: string
+  onChange: (value: string) => void
+  placeholder?: string
+  onFocus?: () => void
+  onBlur?: () => void
+}
+
+export const GlobalTestInput = ({ value, onChange, placeholder, onFocus, onBlur }: Props) => (
   <div className="global-test-wrap">
     <input
       className="global-test-input"

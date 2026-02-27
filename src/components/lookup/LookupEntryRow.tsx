@@ -1,11 +1,19 @@
 import { useState, useRef } from 'react'
+import type { LookupEntry } from '../../utils/lookup.utils'
 import { TagBadge } from './TagBadge'
 import { TagInput } from './TagInput'
 import { DeleteConfirm } from '../shared/DeleteConfirm'
 
-export const LookupEntryRow = ({ entry, allTags, onUpdate, onDelete }) => {
+type Props = {
+  entry: LookupEntry
+  allTags: string[]
+  onUpdate: (entryId: string, data: Partial<LookupEntry>) => void
+  onDelete: (entryId: string) => void
+}
+
+export const LookupEntryRow = ({ entry, allTags, onUpdate, onDelete }: Props) => {
   const [editing, setEditing] = useState(false)
-  const [form, setForm] = useState(null)
+  const [form, setForm] = useState<{ description: string; tags: string[]; url: string } | null>(null)
   const cancelledRef = useRef(false)
 
   const startEdit = () => {
@@ -14,7 +22,7 @@ export const LookupEntryRow = ({ entry, allTags, onUpdate, onDelete }) => {
     cancelledRef.current = false
   }
 
-  const commit = (currentForm) => {
+  const commit = (currentForm: { description: string; tags: string[]; url: string } | null) => {
     const f = currentForm ?? form
     if (!f) return
     onUpdate(entry.id, f)
@@ -28,7 +36,7 @@ export const LookupEntryRow = ({ entry, allTags, onUpdate, onDelete }) => {
     setForm(null)
   }
 
-  const handleContainerBlur = (e) => {
+  const handleContainerBlur = (e: React.FocusEvent<HTMLDivElement>) => {
     if (e.currentTarget.contains(e.relatedTarget)) return
     if (cancelledRef.current) { cancelledRef.current = false; return }
     commit(form)
@@ -43,20 +51,20 @@ export const LookupEntryRow = ({ entry, allTags, onUpdate, onDelete }) => {
         <input
           className="input"
           value={form.description}
-          onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+          onChange={(e) => setForm((f) => ({ ...f!, description: e.target.value }))}
           placeholder="Description"
           autoFocus
         />
         <TagInput
           tags={form.tags}
-          onChange={(tags) => setForm((f) => ({ ...f, tags }))}
+          onChange={(tags) => setForm((f) => ({ ...f!, tags }))}
           suggestions={allTags}
         />
         <input
           className="input"
           value={form.url}
-          onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
-          placeholder="https://…"
+          onChange={(e) => setForm((f) => ({ ...f!, url: e.target.value }))}
+          placeholder="https://\u2026"
           onKeyDown={(e) => {
             if (e.key === 'Enter' || ((e.ctrlKey || e.metaKey) && e.key === 's')) { e.preventDefault(); cancelledRef.current = false; commit(form) }
             if (e.key === 'Escape') cancel()

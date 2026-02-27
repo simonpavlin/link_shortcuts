@@ -3,23 +3,26 @@ import { NavLink } from 'react-router-dom'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
 import { IconSun, IconMoon } from './icons'
 
-export const Layout = ({ children }) => {
-  const [theme, setTheme] = useLocalStorage('linker_theme', 'dark')
+type Props = {
+  children: React.ReactNode
+}
+
+export const Layout = ({ children }: Props) => {
+  const [theme, setTheme] = useLocalStorage<string>('linker_theme', 'dark')
   const [toast, setToast] = useState(false)
-  const toastTimer = useRef(null)
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
   }, [theme])
 
   useEffect(() => {
-    const handler = (e) => {
+    const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-        // Only fire when focus is NOT inside an input/textarea (those handle it themselves)
         const tag = document.activeElement?.tagName
         if (tag === 'INPUT' || tag === 'TEXTAREA') return
         e.preventDefault()
-        clearTimeout(toastTimer.current)
+        if (toastTimer.current) clearTimeout(toastTimer.current)
         setToast(true)
         toastTimer.current = setTimeout(() => setToast(false), 2000)
       }

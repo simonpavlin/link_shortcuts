@@ -1,10 +1,17 @@
 import { useState } from 'react'
 import { IconTrash } from './icons'
 
-export const DeleteConfirm = ({ onDelete, className, iconTitle = 'Delete', stopPropagation = false }) => {
+type Props = {
+  onDelete: () => void
+  className?: string
+  iconTitle?: string
+  stopPropagation?: boolean
+}
+
+export const DeleteConfirm = ({ onDelete, className, iconTitle = 'Delete', stopPropagation = false }: Props) => {
   const [confirming, setConfirming] = useState(false)
 
-  const stop = (e) => { if (stopPropagation) e.stopPropagation() }
+  const stop = (e: React.MouseEvent) => { if (stopPropagation) e.stopPropagation() }
 
   return (
     <div

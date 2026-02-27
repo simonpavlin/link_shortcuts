@@ -1,15 +1,20 @@
 import { useState, useEffect, useRef } from 'react'
 import { IconTrash, IconMoreDots, IconCopy } from './icons'
 
-export const MoreMenu = ({ onDuplicate, onDelete }) => {
+type Props = {
+  onDuplicate: () => void
+  onDelete: () => void
+}
+
+export const MoreMenu = ({ onDuplicate, onDelete }: Props) => {
   const [open, setOpen] = useState(false)
   const [confirming, setConfirming] = useState(false)
-  const menuRef = useRef(null)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!open) return
-    const handler = (e) => {
-      if (!menuRef.current?.contains(e.target)) {
+    const handler = (e: MouseEvent) => {
+      if (!menuRef.current?.contains(e.target as Node)) {
         setOpen(false)
         setConfirming(false)
       }

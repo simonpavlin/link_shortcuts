@@ -1,20 +1,29 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { evaluateQuery } from '../utils/evaluate'
+import type { Shortcut } from '../utils/shortcuts.utils'
+import type { LookupTable, LookupEntry } from '../utils/lookup.utils'
 import { LookupPickerView } from './lookup/LookupPickerView'
 import { HomePage } from './HomePage'
 
 const SHORTCUTS_KEY = 'linker_shortcuts'
 const LOOKUP_KEY = 'linker_lookup'
 
-const readShortcuts = () => {
+type PickerData = {
+  table: LookupTable
+  entries: LookupEntry[]
+  tags: string[]
+  params: Record<string, string>
+} | null
+
+const readShortcuts = (): Shortcut[] => {
   try {
     const parsed = JSON.parse(localStorage.getItem(SHORTCUTS_KEY) ?? 'null')
     return Array.isArray(parsed?.shortcuts) ? parsed.shortcuts : []
   } catch { return [] }
 }
 
-const readTables = () => {
+const readTables = (): LookupTable[] => {
   try {
     const parsed = JSON.parse(localStorage.getItem(LOOKUP_KEY) ?? 'null')
     return Array.isArray(parsed?.tables) ? parsed.tables : []
@@ -24,13 +33,12 @@ const readTables = () => {
 export const CommandRouter = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const [pickerData, setPickerData] = useState(null)
+  const [pickerData, setPickerData] = useState<PickerData>(null)
 
   const rawQ = searchParams.get('q') ?? ''
 
-  // Collect all non-q query params as named URL parameters
   const urlParams = useMemo(() => {
-    const params = {}
+    const params: Record<string, string> = {}
     for (const [key, value] of searchParams.entries()) {
       if (key !== 'q') params[key] = value
     }

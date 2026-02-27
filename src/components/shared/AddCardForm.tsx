@@ -1,7 +1,12 @@
 import { useState } from 'react'
 import { IconPlus } from './icons'
 
-export const AddCardForm = ({ onAdd, addLabel }) => {
+type Props = {
+  onAdd: (form: { key: string; name: string }) => void
+  addLabel: string
+}
+
+export const AddCardForm = ({ onAdd, addLabel }: Props) => {
   const [adding, setAdding] = useState(false)
   const [form, setForm] = useState({ key: '', name: '' })
 
@@ -17,7 +22,7 @@ export const AddCardForm = ({ onAdd, addLabel }) => {
     setForm({ key: '', name: '' })
   }
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleAdd()
     if (e.key === 'Escape') handleCancel()
   }

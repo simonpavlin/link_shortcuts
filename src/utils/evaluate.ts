@@ -1,13 +1,41 @@
 import { evaluateRules, interpolateParams } from './shortcuts.utils'
+import type { Shortcut, Rule, RuleResult } from './shortcuts.utils'
 import { findTable, searchEntries } from './lookup.utils'
+import type { LookupTable, LookupEntry } from './lookup.utils'
 import { resolveUrl } from './url.utils'
+
+// ── Types ────────────────────────────────────────────────────────────────────
+
+export type EvalStep =
+  | { type: 'parse'; module: string | null; command: string | null; param: string | null; flags: Record<string, string>; params: Record<string, string>; depth: number }
+  | { type: 'sentinel'; navigateTo: string; depth: number }
+  | { type: 'shortcut_found'; shortcut: Shortcut; depth: number }
+  | { type: 'shortcut_not_found'; command: string; depth: number }
+  | { type: 'shortcut_match'; shortcut: Shortcut; rule: Rule; rawUrl: string | null; depth: number }
+  | { type: 'shortcut_rule_fail'; rule: Rule; depth: number }
+  | { type: 'lookup_found'; table: LookupTable; depth: number }
+  | { type: 'lookup_not_found'; command: string; depth: number }
+  | { type: 'lookup_match'; table: LookupTable; entry: LookupEntry; tags: string[]; depth: number }
+  | { type: 'lookup_no_match'; table: LookupTable; tags: string[]; depth: number }
+  | { type: 'lookup_multi'; table: LookupTable; entries: LookupEntry[]; tags: string[]; depth: number }
+  | { type: 'chain'; fromRaw: string | null; toQuery: string; depth: number }
+  | { type: 'error'; message: string; depth: number }
+
+export type EvalResult =
+  | { type: 'none' }
+  | { type: 'redirect'; url: string }
+  | { type: 'navigate'; to: string }
+  | { type: 'picker'; table: LookupTable; entries: LookupEntry[]; tags: string[]; params: Record<string, string> }
+  | { type: 'error'; message: string }
+
+// ── Internals ────────────────────────────────────────────────────────────────
 
 const MAX_DEPTH = 5
 const FLAG_RE = /^--([a-zA-Z_][\w-]*)=(.*)$/
 
-function parseFlags(tokens) {
-  const plainTokens = []
-  const flags = {}
+function parseFlags(tokens: string[]): { plainTokens: string[]; flags: Record<string, string> } {
+  const plainTokens: string[] = []
+  const flags: Record<string, string> = {}
   for (const token of tokens) {
     const m = FLAG_RE.exec(token)
     if (m) {
@@ -19,7 +47,7 @@ function parseFlags(tokens) {
   return { plainTokens, flags }
 }
 
-function parseRawQ(rawQ) {
+function parseRawQ(rawQ: string) {
   const parts = rawQ.split(' ')
   const { plainTokens, flags } = parseFlags(parts.slice(2))
   return {
@@ -30,14 +58,7 @@ function parseRawQ(rawQ) {
   }
 }
 
-/**
- * Returns the ?q= value if `resolved` is an internal chain URL, otherwise null.
- * Handles two forms:
- *   - Relative:  /?q=...         (produced by resolveUrl for word-only rule URLs)
- *   - Absolute:  http://localhost:5173/?q=...  or  https://linker.pavlin.dev/?q=...
- *     when the URL's origin matches the app's own origin.
- */
-function extractChainQ(resolved, origin) {
+function extractChainQ(resolved: string, origin: string): string | null {
   if (resolved.startsWith('/?')) {
     return new URLSearchParams(resolved.slice(2)).get('q')
   }
@@ -52,13 +73,20 @@ function extractChainQ(resolved, origin) {
   return null
 }
 
-function evaluateStep(rawQ, shortcuts, tables, steps, depth, origin, urlParams = {}) {
+function evaluateStep(
+  rawQ: string,
+  shortcuts: Shortcut[],
+  tables: LookupTable[],
+  steps: EvalStep[],
+  depth: number,
+  origin: string,
+  urlParams: Record<string, string> = {},
+): EvalResult {
   if (depth > MAX_DEPTH) {
     return { type: 'error', message: 'Max chain depth reached (possible cycle)' }
   }
 
   const { module, command, param, flags } = parseRawQ(rawQ)
-  // Inherited params (urlParams at depth 0, parent params at depth 1+) merged with local flags (flags win)
   const params = { ...urlParams, ...flags }
 
   steps.push({ type: 'parse', module, command, param, flags, params, depth })
@@ -88,7 +116,7 @@ function evaluateStep(rawQ, shortcuts, tables, steps, depth, origin, urlParams =
     if (shortcut.lowercaseInput) processedParam = processedParam.toLowerCase()
 
     const results = evaluateRules(shortcut.rules, processedParam, params)
-    let match = null
+    let match: RuleResult | null = null
     for (const r of results) {
       if (r.matched) {
         match = r
@@ -99,7 +127,7 @@ function evaluateStep(rawQ, shortcuts, tables, steps, depth, origin, urlParams =
     }
 
     if (match) {
-      const resolved = resolveUrl(match.resultUrl)
+      const resolved = resolveUrl(match.resultUrl!)
       const nextQ = extractChainQ(resolved, origin)
       if (nextQ !== null) {
         steps.push({ type: 'chain', fromRaw: match.resultUrl, toQuery: nextQ, depth })
@@ -153,18 +181,16 @@ function evaluateStep(rawQ, shortcuts, tables, steps, depth, origin, urlParams =
   return { type: 'none' }
 }
 
-/**
- * Evaluates a raw query string against shortcuts and tables.
- * @param {string} rawQ     – content of the ?q= param
- * @param {Array}  shortcuts
- * @param {Array}  tables
- * @param {string} [origin] – window.location.origin, used to detect same-origin chain URLs
- * @returns {{ steps: Array, result: Object }}
- */
-export function evaluateQuery(rawQ, shortcuts, tables, origin = '', urlParams = {}) {
+export function evaluateQuery(
+  rawQ: string,
+  shortcuts: Shortcut[],
+  tables: LookupTable[],
+  origin = '',
+  urlParams: Record<string, string> = {},
+): { steps: EvalStep[]; result: EvalResult } {
   const trimmed = rawQ?.trim() ?? ''
   if (!trimmed) return { steps: [], result: { type: 'none' } }
-  const steps = []
+  const steps: EvalStep[] = []
   const result = evaluateStep(trimmed, shortcuts, tables, steps, 0, origin, urlParams)
   return { steps, result }
 }

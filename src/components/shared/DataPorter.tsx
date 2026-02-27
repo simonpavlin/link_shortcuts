@@ -1,26 +1,22 @@
 import { useRef } from 'react'
 import { IconDownload, IconUpload } from './icons'
 
-/**
- * Universal import / export for any module's data.
- *
- * Exports:  { [dataKey]: data }  → <filename>.json
- * Imports:  reads JSON, validates parsed[dataKey], calls onImport(parsed[dataKey])
- *
- * @param {any}      data       – array / object to export
- * @param {string}   dataKey    – top-level key in the JSON file (e.g. "shortcuts", "tables")
- * @param {string}   filename   – download filename  (e.g. "linker-shortcuts.json")
- * @param {Function} onImport   – called with parsed[dataKey] after validation passes
- * @param {Function} [validate] – (val) => boolean  – extra validation; defaults to Array.isArray
- */
+type Props = {
+  data: unknown
+  dataKey: string
+  filename: string
+  onImport: (value: unknown) => void
+  validate?: (value: unknown) => boolean
+}
+
 export const DataPorter = ({
   data,
   dataKey,
   filename,
   onImport,
   validate = Array.isArray,
-}) => {
-  const fileRef = useRef()
+}: Props) => {
+  const fileRef = useRef<HTMLInputElement>(null)
 
   const handleExport = () => {
     const blob = new Blob([JSON.stringify({ [dataKey]: data }, null, 2)], {
@@ -34,13 +30,13 @@ export const DataPorter = ({
     URL.revokeObjectURL(url)
   }
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0]
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
     reader.onload = (event) => {
       try {
-        const parsed = JSON.parse(event.target.result)
+        const parsed = JSON.parse(event.target?.result as string)
         const value = parsed[dataKey]
         if (validate(value)) {
           onImport(value)
@@ -62,7 +58,7 @@ export const DataPorter = ({
       </button>
       <button
         className="btn btn-ghost btn-sm"
-        onClick={() => fileRef.current.click()}
+        onClick={() => fileRef.current?.click()}
         title="Import from JSON"
       >
         <IconUpload /> Import

@@ -1,25 +1,32 @@
 import { useState, useRef } from 'react'
 import { TagBadge } from './TagBadge'
 
-export const TagInput = ({ tags, onChange, suggestions = [], placeholder = 'Add tags…' }) => {
+type Props = {
+  tags: string[]
+  onChange: (tags: string[]) => void
+  suggestions?: string[]
+  placeholder?: string
+}
+
+export const TagInput = ({ tags, onChange, suggestions = [], placeholder = 'Add tags\u2026' }: Props) => {
   const [input, setInput] = useState('')
   const [open, setOpen] = useState(false)
-  const inputRef = useRef(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
-  const addTag = (raw) => {
+  const addTag = (raw: string) => {
     const tag = raw.trim().toLowerCase()
     if (!tag || tags.includes(tag)) { setInput(''); return }
     onChange([...tags, tag])
     setInput('')
   }
 
-  const removeTag = (tag) => onChange(tags.filter((t) => t !== tag))
+  const removeTag = (tag: string) => onChange(tags.filter((t) => t !== tag))
 
   const filtered = suggestions.filter(
     (s) => !tags.includes(s) && s.toLowerCase().includes(input.toLowerCase())
   )
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag(input) }
     if (e.key === 'Backspace' && !input && tags.length) removeTag(tags[tags.length - 1])
     if (e.key === 'Escape') setOpen(false)

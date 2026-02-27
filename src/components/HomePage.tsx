@@ -1,20 +1,23 @@
-import { useState, useMemo, useCallback, Fragment } from 'react'
+import React, { useState, useMemo, useCallback, Fragment } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { evaluateQuery } from '../utils/evaluate'
+import type { EvalStep, EvalResult } from '../utils/evaluate'
+import type { Shortcut } from '../utils/shortcuts.utils'
+import type { LookupTable, LookupEntry } from '../utils/lookup.utils'
 import { LookupPickerView } from './lookup/LookupPickerView'
 import { IconCheck, IconX, IconReturn, IconChevronDown } from './shared/icons'
 
 const SHORTCUTS_KEY = 'linker_shortcuts'
 const LOOKUP_KEY = 'linker_lookup'
 
-const readShortcuts = () => {
+const readShortcuts = (): Shortcut[] => {
   try {
     const parsed = JSON.parse(localStorage.getItem(SHORTCUTS_KEY) ?? 'null')
     return Array.isArray(parsed?.shortcuts) ? parsed.shortcuts : []
   } catch { return [] }
 }
 
-const readTables = () => {
+const readTables = (): LookupTable[] => {
   try {
     const parsed = JSON.parse(localStorage.getItem(LOOKUP_KEY) ?? 'null')
     return Array.isArray(parsed?.tables) ? parsed.tables : []
@@ -23,29 +26,21 @@ const readTables = () => {
 
 // ─── Row builders ─────────────────────────────────────────────────────────────
 
-const fnRow = (id, label, arg, mc) => (
-  <div key={id} className={`eval-step eval-step--child ${mc}`}>
-    <span className="eval-step-label">{label}</span>
-    <span className="eval-step-desc">{arg}</span>
-  </div>
-)
-
-
-const resOkRow = (id, desc, mc) => (
+const resOkRow = (id: string, desc: React.ReactNode, mc: string) => (
   <div key={id} className={`eval-step eval-step--child-2 ${mc}`}>
     <span className="eval-step-label"><IconReturn /></span>
     <span className="eval-step-desc">{desc}</span>
   </div>
 )
 
-const resMatchRow = (id, mc) => (
+const resMatchRow = (id: string, mc: string) => (
   <div key={id} className={`eval-step eval-step--child-2 ${mc}`}>
     <span className="eval-step-label"><IconReturn /></span>
     <span className="eval-step-desc eval-res--ok"><IconCheck /></span>
   </div>
 )
 
-const resFailRow = (id, mc) => (
+const resFailRow = (id: string, mc: string) => (
   <div key={id} className={`eval-step eval-step--child-2 ${mc}`}>
     <span className="eval-step-label"><IconReturn /></span>
     <span className="eval-step-desc eval-res--fail"><IconX /></span>
@@ -54,18 +49,27 @@ const resFailRow = (id, mc) => (
 
 // ─── EvalTrace ────────────────────────────────────────────────────────────────
 
-const entryDesc = (entry) => entry.description
+type FlatItem = { kind: 'flat'; id: string; row: React.ReactNode }
+type BlockItem = { kind: 'block'; id: string; fnLabel: string; fnArg: string; mc: string; resultRows: React.ReactNode[]; summaryType: 'boolean' | 'count'; summaryValue: boolean | number }
+type TraceItem = FlatItem | BlockItem
+
+const entryDesc = (entry: LookupEntry) => entry.description
   ? <>{entry.description} <span className="eval-url-muted">({entry.url})</span></>
   : entry.url
 
-const EvalTrace = ({ steps, result }) => {
+type EvalTraceProps = {
+  steps: EvalStep[]
+  result: EvalResult
+}
+
+const EvalTrace = ({ steps, result }: EvalTraceProps) => {
   if (!steps.length) return null
 
-  const [collapsed, setCollapsed] = useState({})
-  const toggle = (id) => setCollapsed(p => ({ ...p, [id]: !p[id] }))
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
+  const toggle = (id: string) => setCollapsed(p => ({ ...p, [id]: !p[id] }))
 
-  let currentModule = null
-  const items = [] // { kind:'flat', id, row } | { kind:'block', id, fnLabel, fnArg, mc, resultRows, summaryType, summaryValue }
+  let currentModule: string | null = null
+  const items: TraceItem[] = []
 
   for (let i = 0; i < steps.length; i++) {
     const step = steps[i]
@@ -79,15 +83,15 @@ const EvalTrace = ({ steps, result }) => {
         : ''
       items.push({ kind: 'flat', id: `p${i}`, row:
         <div key={i} className={`eval-step eval-step--parse ${mCls}`}>
-          <span className="eval-step-label">{step.module ?? '—'}</span>
-          <span className="eval-step-desc">{step.command ?? '—'} {step.param ?? '—'}{paramStr && <span className="eval-url-muted">{paramStr}</span>}</span>
+          <span className="eval-step-label">{step.module ?? '\u2014'}</span>
+          <span className="eval-step-desc">{step.command ?? '\u2014'} {step.param ?? '\u2014'}{paramStr && <span className="eval-url-muted">{paramStr}</span>}</span>
         </div>
       })
       continue
     }
 
     const mc = currentModule ? `eval-module-${currentModule}` : ''
-    const block = (fnLabel, fnArg, resultRows, summaryType, summaryValue) =>
+    const block = (fnLabel: string, fnArg: string, resultRows: React.ReactNode[], summaryType: 'boolean' | 'count', summaryValue: boolean | number) =>
       items.push({ kind: 'block', id: `b${i}`, fnLabel, fnArg, mc, resultRows, summaryType, summaryValue })
 
     switch (step.type) {
@@ -136,10 +140,9 @@ const EvalTrace = ({ steps, result }) => {
     }
   }
 
-  // Final action row
   const mc = currentModule ? `eval-module-${currentModule}` : ''
   if (result) {
-    let label, desc, cls
+    let label: string | undefined, desc: string | undefined, cls: string | undefined
     switch (result.type) {
       case 'redirect':  label = 'redirect'; desc = result.url;   cls = 'eval-step--match';    break
       case 'navigate':  label = 'navigate'; desc = result.to;    cls = 'eval-step--navigate'; break
@@ -185,7 +188,11 @@ const EvalTrace = ({ steps, result }) => {
 
 // ─── HomePage ─────────────────────────────────────────────────────────────────
 
-export const HomePage = ({ initialQ = '' }) => {
+type Props = {
+  initialQ?: string
+}
+
+export const HomePage = ({ initialQ = '' }: Props) => {
   const [input, setInput] = useState(initialQ)
   const navigate = useNavigate()
 
@@ -203,7 +210,7 @@ export const HomePage = ({ initialQ = '' }) => {
     }
   }, [result, navigate])
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && canExecute) execute()
   }
 

@@ -1,14 +1,20 @@
-// Deterministic hue from tag string using golden-angle distribution
-function tagHue(tag) {
+import React from 'react'
+
+type Props = {
+  tag: string
+  onRemove?: () => void
+}
+
+function tagHue(tag: string): number {
   let h = 0
   for (const c of tag) h = (h * 31 + c.charCodeAt(0)) & 0xffff
   return (h * 137) % 360
 }
 
-export const TagBadge = ({ tag, onRemove }) => {
+export const TagBadge = ({ tag, onRemove }: Props) => {
   const hue = tagHue(tag)
   return (
-    <span className="tag-badge" style={{ '--tag-hue': hue }}>
+    <span className="tag-badge" style={{ '--tag-hue': hue } as React.CSSProperties}>
       {tag}
       {onRemove && (
         <button

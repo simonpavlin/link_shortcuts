@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
+import type { LookupTable } from '../../utils/lookup.utils'
 import {
   addTable,
   updateTable,
@@ -15,21 +16,20 @@ import { GlobalTestInput } from '../shared/GlobalTestInput'
 import { AddCardForm } from '../shared/AddCardForm'
 
 const STORAGE_KEY = 'linker_lookup'
-const INITIAL = { tables: [] }
+const INITIAL: { tables: LookupTable[] } = { tables: [] }
 
 export const LookupAdminView = () => {
-  const [data, setData] = useLocalStorage(STORAGE_KEY, INITIAL)
+  const [data, setData] = useLocalStorage<{ tables: LookupTable[] }>(STORAGE_KEY, INITIAL)
   const [testInput, setTestInput] = useState('')
 
   const { tables } = data
-  const mutate = (newTables) => setData({ tables: newTables })
+  const mutate = (newTables: LookupTable[]) => setData({ tables: newTables })
 
-  // Parse test input: first word = table key, rest = tags
   const spaceIdx = testInput.indexOf(' ')
   const testKey = spaceIdx === -1 ? (testInput.trim() || null) : (testInput.slice(0, spaceIdx) || null)
   const testTags = spaceIdx === -1 ? [] : testInput.slice(spaceIdx + 1).split(' ').filter(Boolean)
 
-  const handleAddTable = (form) => {
+  const handleAddTable = (form: { key: string; name: string }) => {
     const result = addTable(tables, form)
     mutate(result.tables)
   }
@@ -93,7 +93,7 @@ export const LookupAdminView = () => {
           data={tables}
           dataKey="tables"
           filename="linker-lookup.json"
-          onImport={(newTables) => mutate(newTables)}
+          onImport={(val) => mutate(val as LookupTable[])}
         />
       </div>
     </div>

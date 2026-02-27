@@ -1,13 +1,23 @@
 import { useState, useRef } from 'react'
 
-/**
- * Hook for inline editing of a single value (key or name).
- * @param {string} currentValue – the live value from parent state
- * @param {(trimmed: string) => void} onCommit – called with the trimmed value when editing finishes
- * @param {{ allowEmpty?: boolean }} options – allowEmpty: false rejects blank commits (default false)
- * @returns {{ editing, editValue, setEditValue, startEdit, commitEdit, cancelEdit }}
- */
-export const useInlineEdit = (currentValue, onCommit, { allowEmpty = false } = {}) => {
+type UseInlineEditOptions = {
+  allowEmpty?: boolean
+}
+
+type UseInlineEditReturn = {
+  editing: boolean
+  editValue: string
+  setEditValue: (value: string) => void
+  startEdit: () => void
+  commitEdit: () => void
+  cancelEdit: () => void
+}
+
+export const useInlineEdit = (
+  currentValue: string,
+  onCommit: (trimmed: string) => void,
+  { allowEmpty = false }: UseInlineEditOptions = {},
+): UseInlineEditReturn => {
   const [editing, setEditing] = useState(false)
   const [editValue, setEditValue] = useState(currentValue)
   const doneRef = useRef(false)

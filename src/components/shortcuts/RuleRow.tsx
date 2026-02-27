@@ -3,14 +3,23 @@ import { useSortable } from '@dnd-kit/sortable'
 import { PATTERN_TYPES } from '../../utils/shortcuts.utils'
 import { DeleteConfirm } from '../shared/DeleteConfirm'
 import { IconDrag, IconArrowRight, IconCheck, IconX, IconMinus, IconChevronDown } from '../shared/icons'
+import type { Rule, RuleResult, PatternTypeName } from '../../utils/shortcuts.utils'
 
-const PRESET_OPTIONS = ['number', 'string', 'url', 'empty', 'const', 'regex']
+const PRESET_OPTIONS: PatternTypeName[] = ['number', 'string', 'url', 'empty', 'const', 'regex']
 
 // ── PatternField ──────────────────────────────────────────────────────────────
 // Dropdown for preset types; switches to text field for 'const' and 'regex'.
-export const PatternField = ({ patternType, pattern, onChange, onKeyDown, autoFocus }) => {
+export type PatternFieldProps = {
+  patternType: PatternTypeName | null
+  pattern: string
+  onChange: (val: { patternType: PatternTypeName; pattern: string }) => void
+  onKeyDown?: (e: React.KeyboardEvent) => void
+  autoFocus?: boolean
+}
+
+export const PatternField = ({ patternType, pattern, onChange, onKeyDown, autoFocus }: PatternFieldProps) => {
   const [open, setOpen] = useState(false)
-  const dropRef = useRef(null)
+  const dropRef = useRef<HTMLDivElement>(null)
 
   // null = placeholder (no type chosen yet); unknown legacy keys fall back to 'regex'
   const isPlaceholder = patternType == null
@@ -19,19 +28,19 @@ export const PatternField = ({ patternType, pattern, onChange, onKeyDown, autoFo
 
   useEffect(() => {
     if (!open) return
-    const handler = (e) => {
-      if (!dropRef.current?.contains(e.target)) setOpen(false)
+    const handler = (e: MouseEvent) => {
+      if (!dropRef.current?.contains(e.target as Node)) setOpen(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [open])
 
-  const handleTypeSelect = (type) => {
+  const handleTypeSelect = (type: PatternTypeName) => {
     setOpen(false)
     if (type === 'const' || type === 'regex') {
       onChange({ patternType: type, pattern: '' })
     } else {
-      onChange({ patternType: type, pattern: PATTERN_TYPES[type].pattern })
+      onChange({ patternType: type, pattern: PATTERN_TYPES[type].pattern! })
     }
   }
 
@@ -73,7 +82,7 @@ export const PatternField = ({ patternType, pattern, onChange, onKeyDown, autoFo
         <input
           className="rule-input-pattern"
           value={pattern}
-          onChange={(e) => onChange({ patternType: effectiveType, pattern: e.target.value })}
+          onChange={(e) => onChange({ patternType: effectiveType!, pattern: e.target.value })}
           onKeyDown={onKeyDown}
           placeholder={effectiveType === 'const' ? 'exact value…' : 'regex…'}
           autoFocus={autoFocus}
@@ -99,7 +108,7 @@ export const PatternField = ({ patternType, pattern, onChange, onKeyDown, autoFo
         className="pattern-type-badge"
         onClick={() => setOpen((o) => !o)}
       >
-        <span className="pattern-badge-label">{PATTERN_TYPES[effectiveType]?.label ?? effectiveType}</span>
+        <span className="pattern-badge-label">{PATTERN_TYPES[effectiveType!]?.label ?? effectiveType}</span>
         <IconChevronDown />
       </button>
       {open && menu}
@@ -108,6 +117,15 @@ export const PatternField = ({ patternType, pattern, onChange, onKeyDown, autoFo
 }
 
 // ── RuleRow ───────────────────────────────────────────────────────────────────
+type Props = {
+  rule: Rule
+  matchResult: RuleResult | null
+  testParam: string
+  testIndex: number
+  onSave: (data: { pattern: string; url: string; patternType: PatternTypeName; label: string }) => void
+  onDelete: () => void
+}
+
 export const RuleRow = ({
   rule,
   matchResult,
@@ -115,12 +133,12 @@ export const RuleRow = ({
   testIndex,
   onSave,
   onDelete,
-}) => {
-  const [editPatternType, setEditPatternType] = useState(rule.patternType ?? 'regex')
+}: Props) => {
+  const [editPatternType, setEditPatternType] = useState<PatternTypeName>(rule.patternType ?? 'regex')
   const [editPattern, setEditPattern]         = useState(rule.pattern)
   const [editUrl, setEditUrl]                 = useState(rule.url)
 
-  const editPatternTypeRef = useRef(rule.patternType ?? 'regex')
+  const editPatternTypeRef = useRef<PatternTypeName>(rule.patternType ?? 'regex')
   const editPatternRef     = useRef(rule.pattern)
   const editUrlRef         = useRef(rule.url)
   const onSaveRef          = useRef(onSave)
@@ -147,27 +165,27 @@ export const RuleRow = ({
     })
   }, [])
 
-  const handlePatternChange = ({ patternType, pattern }) => {
+  const handlePatternChange = ({ patternType, pattern }: { patternType: PatternTypeName; pattern: string }) => {
     setEditPatternType(patternType)
     editPatternTypeRef.current = patternType
     setEditPattern(pattern)
     editPatternRef.current = pattern
   }
 
-  const handleUrlChange = (v) => { setEditUrl(v); editUrlRef.current = v }
+  const handleUrlChange = (v: string) => { setEditUrl(v); editUrlRef.current = v }
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || ((e.ctrlKey || e.metaKey) && e.key === 's')) { e.preventDefault(); doSave() }
     if (e.key === 'Escape') {
       cancelledRef.current = true
-      const pt = rule.patternType ?? 'regex'
+      const pt: PatternTypeName = rule.patternType ?? 'regex'
       setEditPatternType(pt); editPatternTypeRef.current = pt
       setEditPattern(rule.pattern); editPatternRef.current = rule.pattern
       setEditUrl(rule.url); editUrlRef.current = rule.url
     }
   }
 
-  const handleContainerBlur = (e) => {
+  const handleContainerBlur = (e: React.FocusEvent<HTMLDivElement>) => {
     if (e.currentTarget.contains(e.relatedTarget)) return
     if (cancelledRef.current) { cancelledRef.current = false; return }
     doSave()

@@ -1,10 +1,18 @@
 import { NavLink } from 'react-router-dom'
+import type { LookupTable, LookupEntry } from '../../utils/lookup.utils'
 import { TagBadge } from './TagBadge'
 import { IconArrowRight } from '../shared/icons'
 import { resolveUrl } from '../../utils/url.utils'
 import { interpolateParams } from '../../utils/shortcuts.utils'
 
-export const LookupPickerView = ({ table, entries, tags, params = {} }) => (
+type Props = {
+  table: LookupTable
+  entries: LookupEntry[]
+  tags: string[]
+  params?: Record<string, string>
+}
+
+export const LookupPickerView = ({ table, entries, tags, params = {} }: Props) => (
   <div className="lookup-picker-page module-find">
     <div className="lookup-picker-header">
       <div className="page-hero-eyebrow">

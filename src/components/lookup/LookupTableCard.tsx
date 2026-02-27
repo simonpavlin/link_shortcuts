@@ -1,11 +1,25 @@
 import { useState } from 'react'
+import type { LookupTable, LookupEntry } from '../../utils/lookup.utils'
 import { getAllTagsForTable, searchEntries } from '../../utils/lookup.utils'
 import { buildLookupUrl } from '../../utils/url.utils'
 import { useInlineEdit } from '../../hooks/useInlineEdit'
 import { LookupEntryRow } from './LookupEntryRow'
 import { TagInput } from './TagInput'
 import { MoreMenu } from '../shared/MoreMenu'
-import { IconPlus, IconLink, IconCheck } from '../shared/icons'
+import { IconPlus, IconLink } from '../shared/icons'
+
+type Props = {
+  table: LookupTable
+  animationDelay?: number
+  testKey: string | null
+  testTags: string[]
+  onUpdate: (id: string, data: { key: string; name: string }) => void
+  onDelete: (id: string) => void
+  onDuplicate: (id: string) => void
+  onAddEntry: (tableId: string, data: Partial<LookupEntry>) => void
+  onUpdateEntry: (tableId: string, entryId: string, data: Partial<LookupEntry>) => void
+  onDeleteEntry: (tableId: string, entryId: string) => void
+}
 
 export const LookupTableCard = ({
   table,
@@ -18,9 +32,9 @@ export const LookupTableCard = ({
   onAddEntry,
   onUpdateEntry,
   onDeleteEntry,
-}) => {
+}: Props) => {
   const [addingEntry, setAddingEntry] = useState(false)
-  const [entryForm, setEntryForm] = useState({ description: '', tags: [], url: '' })
+  const [entryForm, setEntryForm] = useState({ description: '', tags: [] as string[], url: '' })
   const [copied, setCopied] = useState(false)
 
   const keyEdit = useInlineEdit(
@@ -37,13 +51,11 @@ export const LookupTableCard = ({
 
   const allTags = getAllTagsForTable(table)
 
-  // ── Test / filter ─────────────────────────────────────────────────────────
   const isTestMatch = testKey === table.key && testTags.length > 0
   const displayEntries = isTestMatch
     ? searchEntries(table, testTags)
     : table.entries
 
-  // ── Add entry ─────────────────────────────────────────────────────────────
   const handleAddEntry = () => {
     if (!entryForm.url.trim()) return
     onAddEntry(table.id, entryForm)
@@ -56,7 +68,6 @@ export const LookupTableCard = ({
     setEntryForm({ description: '', tags: [], url: '' })
   }
 
-  // ── Copy URL ──────────────────────────────────────────────────────────────
   const handleCopy = () => {
     navigator.clipboard.writeText(buildLookupUrl(window.location.origin, table.key)).then(() => {
       setCopied(true)
@@ -69,7 +80,6 @@ export const LookupTableCard = ({
       className="shortcut-card-wrap"
       style={animationDelay ? { animationDelay: `${animationDelay}s` } : undefined}
     >
-      {/* Name label above card */}
       <div className="shortcut-card-label">
         {nameEdit.editing ? (
           <input
@@ -142,7 +152,6 @@ export const LookupTableCard = ({
           </div>
         </div>
 
-        {/* Entry list */}
         {(displayEntries.length > 0 || (isTestMatch && table.entries.length > 0)) && (
           <div className="lookup-entry-list">
             {displayEntries.length > 0 ? (
@@ -161,7 +170,6 @@ export const LookupTableCard = ({
           </div>
         )}
 
-        {/* Add entry form or button */}
         {addingEntry ? (
           <div className="lookup-add-entry-form">
             <input
@@ -180,7 +188,7 @@ export const LookupTableCard = ({
               className="input"
               value={entryForm.url}
               onChange={(e) => setEntryForm((f) => ({ ...f, url: e.target.value }))}
-              placeholder="https://…"
+              placeholder="https://\u2026"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleAddEntry()
                 if (e.key === 'Escape') cancelAddEntry()
