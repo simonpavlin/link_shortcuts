@@ -127,8 +127,6 @@ export const RuleList = ({
   rules,
   testResults,
   testParam,
-  locked,
-  onLockedClick,
   onReorder,
   onAdd,
   onUpdate,
@@ -159,8 +157,6 @@ export const RuleList = ({
               matchResult={testResults ? (testResults[rule.id] ?? null) : null}
               testParam={testParam}
               testIndex={idx}
-              locked={locked}
-              onLockedClick={onLockedClick}
               onSave={(data) => onUpdate(rule.id, data)}
               onDelete={() => onDelete(rule.id)}
             />
@@ -168,7 +164,7 @@ export const RuleList = ({
         </SortableContext>
       </DndContext>
 
-      {!locked && <PendingRows onAdd={onAdd} />}
+      <PendingRows onAdd={onAdd} />
     </div>
   )
 }

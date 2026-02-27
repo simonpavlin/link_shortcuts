@@ -112,8 +112,6 @@ export const RuleRow = ({
   matchResult,
   testParam,
   testIndex,
-  locked,
-  onLockedClick,
   onSave,
   onDelete,
 }) => {
@@ -177,7 +175,6 @@ export const RuleRow = ({
 
   const handleDelete = (e) => {
     e.stopPropagation()
-    if (locked) { onLockedClick(); return }
     onDelete()
   }
 

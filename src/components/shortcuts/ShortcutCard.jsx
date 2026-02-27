@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { evaluateRules } from '../../utils/shortcuts.utils'
 import { RuleList } from './RuleList'
 import { BrowserUrlBanner } from './BrowserUrlBanner'
-import { IconLock, IconLockOpen, IconTrash, IconMoreDots, IconCopy } from '../shared/icons'
+import { IconTrash, IconMoreDots, IconCopy } from '../shared/icons'
 
 // ── 3-dot menu with duplicate + delete confirmation ───────────────────────────
 const MoreMenu = ({ onDuplicate, onDelete }) => {
@@ -74,8 +74,6 @@ export const ShortcutCard = ({
   onDeleteRule,
   onReorderRules,
 }) => {
-  const [locked, setLocked] = useState(false)
-  const [lockFlash, setLockFlash] = useState(0)
   const [testParam, setTestParam] = useState('')
   const [testFocused, setTestFocused] = useState(false)
 
@@ -91,7 +89,6 @@ export const ShortcutCard = ({
 
   // ── Key edit helpers ──────────────────────────────────────────────────────
   const startKeyEdit = () => {
-    if (locked) { flashLock(); return }
     keyDoneRef.current = false
     setEditKey(shortcut.key)
     setEditingKey(true)
@@ -115,7 +112,6 @@ export const ShortcutCard = ({
 
   // ── Name edit helpers ─────────────────────────────────────────────────────
   const startNameEdit = () => {
-    if (locked) { flashLock(); return }
     nameDoneRef.current = false
     setEditName(shortcut.name)
     setEditingName(true)
@@ -134,15 +130,6 @@ export const ShortcutCard = ({
   const cancelName = () => {
     nameDoneRef.current = true
     setEditName(shortcut.name)
-    setEditingName(false)
-  }
-
-  // ── Lock ──────────────────────────────────────────────────────────────────
-  const flashLock = () => setLockFlash((n) => n + 1)
-
-  const handleLockToggle = () => {
-    setLocked((l) => !l)
-    setEditingKey(false)
     setEditingName(false)
   }
 
@@ -189,26 +176,20 @@ export const ShortcutCard = ({
           />
         ) : shortcut.name ? (
           <span
-            className={`shortcut-card-label-text${!locked ? ' editable' : ''}`}
-            onClick={!locked ? startNameEdit : undefined}
-            title={locked ? undefined : 'Click to edit name'}
+            className="shortcut-card-label-text editable"
+            onClick={startNameEdit}
+            title="Click to edit name"
           >
             {shortcut.name}
           </span>
-        ) : !locked ? (
+        ) : (
           <span className="shortcut-card-label-ghost" onClick={startNameEdit}>
             add name
           </span>
-        ) : null}
+        )}
       </div>
 
-      <div className={`shortcut-card${locked ? ' locked' : ''}${isTesting && !hasNoMatch ? ' card-global-match' : ''}${isTesting && hasNoMatch ? ' card-no-match' : ''}`}>
-        {lockFlash > 0 && (
-          <div key={lockFlash} className="lock-notify" onAnimationEnd={() => setLockFlash(0)}>
-            Card is locked — click the lock icon to unlock.
-          </div>
-        )}
-
+      <div className={`shortcut-card${isTesting && !hasNoMatch ? ' card-global-match' : ''}${isTesting && hasNoMatch ? ' card-no-match' : ''}`}>
         <div className="shortcut-card-header">
           {/* Key badge – click to edit inline */}
           {editingKey ? (
@@ -225,9 +206,9 @@ export const ShortcutCard = ({
             />
           ) : (
             <span
-              className={`shortcut-key-badge${!locked ? ' shortcut-key-badge--editable' : ''}`}
+              className="shortcut-key-badge shortcut-key-badge--editable"
               onClick={startKeyEdit}
-              title={locked ? undefined : 'Click to edit key'}
+              title="Click to edit key"
             >
               {shortcut.key}
             </span>
@@ -245,30 +226,18 @@ export const ShortcutCard = ({
 
           <BrowserUrlBanner shortcutKey={shortcut.key} />
 
-          {!locked && (
-            <div className="header-actions">
-              <MoreMenu
-                onDuplicate={() => onDuplicate(shortcut.id)}
-                onDelete={() => onDelete(shortcut.id)}
-              />
-            </div>
-          )}
-
-          <button
-            className={`lock-btn${locked ? ' active' : ''}`}
-            onClick={handleLockToggle}
-            title={locked ? 'Unlock card' : 'Lock card'}
-          >
-            {locked ? <IconLock /> : <IconLockOpen />}
-          </button>
+          <div className="header-actions">
+            <MoreMenu
+              onDuplicate={() => onDuplicate(shortcut.id)}
+              onDelete={() => onDelete(shortcut.id)}
+            />
+          </div>
         </div>
 
         <RuleList
           rules={shortcut.rules}
           testResults={testResults}
           testParam={activeTestParam}
-          locked={locked}
-          onLockedClick={flashLock}
           onReorder={(newRules) => onReorderRules(shortcut.id, newRules)}
           onAdd={(ruleData) => onAddRule(shortcut.id, ruleData)}
           onUpdate={(ruleId, ruleData) => onUpdateRule(shortcut.id, ruleId, ruleData)}
