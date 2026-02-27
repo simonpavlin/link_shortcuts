@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { parseSearchParams, resolveUrl } from '../utils/url.utils'
-import { resolveRedirect } from '../utils/shortcuts.utils'
-import { findTable, searchEntries } from '../utils/lookup.utils'
+import { evaluateQuery } from '../utils/evaluate'
 import { LookupPickerView } from './lookup/LookupPickerView'
+import { HomePage } from './HomePage'
 
 const SHORTCUTS_KEY = 'linker_shortcuts'
 const LOOKUP_KEY = 'linker_lookup'
@@ -27,47 +26,22 @@ export const CommandRouter = () => {
   const navigate = useNavigate()
   const [pickerData, setPickerData] = useState(null)
 
+  const rawQ = searchParams.get('q') ?? ''
+
+  const { result } = useMemo(
+    () => evaluateQuery(rawQ, readShortcuts(), readTables(), window.location.origin),
+    [rawQ],
+  )
+
   useEffect(() => {
-    const { module, command, param } = parseSearchParams(searchParams)
-
-    // Sentinel: go to admin, optionally prefill the key field
-    if (param === '?') {
-      const prefill = command ? `?key=${encodeURIComponent(command)}` : ''
-      navigate(module === 'lookup' ? `/lookup/${prefill}` : `/shortcuts/${prefill}`, { replace: true })
-      return
+    if (result.type === 'redirect') {
+      window.location.replace(result.url)
+    } else if (result.type === 'navigate') {
+      navigate(result.to, { replace: true })
+    } else if (result.type === 'picker') {
+      setPickerData(result)
     }
-
-    if (module === 'shortcuts' && command && param) {
-      const result = resolveRedirect(readShortcuts(), command, param)
-      if (result.found && result.url) {
-        window.location.replace(resolveUrl(result.url))
-        return
-      }
-      navigate(`/shortcuts/?key=${encodeURIComponent(command)}`, { replace: true })
-      return
-    }
-
-    if (module === 'lookup' && command && param) {
-      const tags = param.split(' ').filter(Boolean)
-      const table = findTable(readTables(), command)
-      if (table) {
-        const matches = searchEntries(table, tags)
-        if (matches.length === 1) {
-          window.location.replace(resolveUrl(matches[0].url))
-          return
-        }
-        if (matches.length > 1) {
-          setPickerData({ table, entries: matches, tags })
-          return
-        }
-      }
-      navigate(`/lookup/?key=${encodeURIComponent(command)}`, { replace: true })
-      return
-    }
-
-    // No match or just module with no command → go to admin
-    navigate(module === 'lookup' ? '/lookup/' : '/shortcuts/', { replace: true })
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [result]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (pickerData) {
     return (
@@ -77,6 +51,10 @@ export const CommandRouter = () => {
         tags={pickerData.tags}
       />
     )
+  }
+
+  if (result.type === 'none') {
+    return <HomePage initialQ={rawQ} />
   }
 
   return null

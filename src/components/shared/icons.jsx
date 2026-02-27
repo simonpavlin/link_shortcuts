@@ -136,6 +136,22 @@ export const IconX = (props) => (
   </svg>
 )
 
+export const IconReturn = (props) => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"
+    stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M4 4 L4 11 L13 11" />
+    <polyline points="10 8 13 11 10 14" />
+  </svg>
+)
+
+export const IconQuestion = (props) => (
+  <svg width="12" height="12" viewBox="0 0 16 16" fill="none"
+    stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M6 6a2 2 0 113.2 1.6C8.5 8.2 8 8.8 8 9.5" />
+    <circle cx="8" cy="12" r=".8" fill="currentColor" stroke="none" />
+  </svg>
+)
+
 export const IconMoreDots = (props) => (
   <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" {...props}>
     <circle cx="8" cy="3.5" r="1.3" />

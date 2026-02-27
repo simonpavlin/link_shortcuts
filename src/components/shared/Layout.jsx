@@ -34,7 +34,7 @@ export const Layout = ({ children }) => {
     <div className="layout">
       <header className="layout-header">
         <div className="layout-header-inner">
-          <span className="layout-logo">Linker</span>
+          <NavLink to="/" className="layout-logo">Linker</NavLink>
           <nav className="layout-nav">
             <NavLink
               to="/shortcuts/"

@@ -207,6 +207,8 @@ a:hover { text-decoration: underline; }
   font-weight: 500;
   color: var(--text);
   letter-spacing: -0.01em;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .layout-nav { display: flex; gap: 2px; }
@@ -1741,6 +1743,144 @@ select.input option { background: #1a1a24; color: var(--text); }
   letter-spacing: 0.03em;
 }
 .lookup-picker-back:hover { color: var(--text); text-decoration: underline; }
+
+/* =====================================================
+   HOME PAGE
+   ===================================================== */
+.home-page {
+  max-width: 660px;
+  margin: 60px auto 0;
+  padding: 0 20px 80px;
+  animation: fadeUp 0.35s ease both;
+}
+
+.home-input-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.home-input {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  outline: none;
+  transition: border-color var(--t), background var(--t);
+}
+.home-input::placeholder { color: var(--text-label); }
+.home-input:focus { border-color: var(--accent-1); background: var(--surface-hover); }
+
+.home-go-btn {
+  padding: 10px 20px;
+  background: var(--accent-1);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity var(--t);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.home-go-btn:disabled { opacity: 0.35; cursor: default; }
+.home-go-btn:not(:disabled):hover { opacity: 0.82; }
+
+/* =====================================================
+   EVAL TRACE
+   ===================================================== */
+.eval-trace {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.eval-step {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 6px 14px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.eval-step:last-child { border-bottom: none; }
+
+.eval-step-label {
+  min-width: 86px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-label);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+.eval-step-desc {
+  color: var(--text-secondary);
+  word-break: break-all;
+}
+
+/* Parse — section header, always at level 0 */
+.eval-step--parse {
+  background: rgba(255, 255, 255, 0.025);
+}
+.eval-step--parse .eval-step-label { color: var(--text-label); font-weight: 500; min-width: auto; }
+.eval-step--parse { gap: 1ch; }
+.eval-step--parse .eval-step-desc  { color: var(--text-muted); }
+.eval-step--parse.eval-module-shortcuts .eval-step-label { color: #0078d4; }
+.eval-step--parse.eval-module-lookup    .eval-step-label { color: #7c3aed; }
+
+/* Child steps — indented one level under their parse block */
+.eval-step--child { padding-left: 28px; gap: 1ch; }
+.eval-step--child .eval-step-label { min-width: auto; }
+.eval-step--child.eval-module-shortcuts { background: rgba(0, 120, 212, 0.04); }
+.eval-step--child.eval-module-lookup    { background: rgba(124, 58, 237, 0.04); }
+
+/* Child-2 steps — arg / result rows at level 2 */
+.eval-step--child-2 { padding-left: 52px; }
+.eval-step--child-2.eval-module-shortcuts { background: rgba(0, 120, 212, 0.04); }
+.eval-step--child-2.eval-module-lookup    { background: rgba(124, 58, 237, 0.04); }
+.eval-step--child-2 .eval-step-label { min-width: auto; margin-right: 10px; color: var(--text-muted); }
+
+/* Return rows — IconReturn icon */
+.eval-step--return .eval-step-label { color: var(--text-muted); }
+
+/* Variants — inline result value icons */
+.eval-res--ok   svg { color: var(--accent-3); }
+.eval-res--fail svg { color: var(--danger); }
+.eval-step--navigate .eval-step-label { color: var(--text-muted); }
+
+/* Action rows — level-1, visually distinct conclusion block */
+.eval-step--action { background: var(--surface); padding-top: 8px; padding-bottom: 8px; }
+.eval-step--action .eval-step-label { font-weight: 600; color: var(--text-label); }
+.eval-step--action.eval-step--match    .eval-step-label { color: var(--accent-3); }
+.eval-step--action.eval-step--navigate .eval-step-label { color: var(--text-secondary); }
+.eval-step--action.eval-step--no-match .eval-step-label { color: var(--danger); }
+
+[data-theme="light"] .eval-step--parse { background: rgba(0, 0, 0, 0.025); }
+[data-theme="light"] .eval-step--child.eval-module-shortcuts { background: rgba(0, 120, 212, 0.05); }
+[data-theme="light"] .eval-step--child.eval-module-lookup    { background: rgba(124, 58, 237, 0.05); }
+[data-theme="light"] .eval-step--child-2.eval-module-shortcuts { background: rgba(0, 120, 212, 0.05); }
+[data-theme="light"] .eval-step--child-2.eval-module-lookup    { background: rgba(124, 58, 237, 0.05); }
+
+/* Inline picker below trace */
+.home-picker {
+  margin-top: 4px;
+}
+.home-picker .lookup-picker-page {
+  margin: 0;
+  padding: 0;
+}
 
 /* =====================================================
    MOBILE
