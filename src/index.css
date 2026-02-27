@@ -1855,6 +1855,17 @@ select.input option { background: #1a1a24; color: var(--text); }
 /* Return rows — IconReturn icon */
 .eval-step--return .eval-step-label { color: var(--text-muted); }
 
+/* Collapsible blocks */
+.eval-step--collapsible { cursor: pointer; user-select: none; }
+.eval-step--collapsible:hover.eval-module-shortcuts { background: rgba(0, 120, 212, 0.08); }
+.eval-step--collapsible:hover.eval-module-lookup    { background: rgba(124, 58, 237, 0.08); }
+.eval-chevron { transition: transform 0.12s; color: var(--text-muted); margin-left: auto; flex-shrink: 0; }
+.eval-chevron--collapsed { transform: rotate(-90deg); }
+.eval-collapsed-count { margin-left: 8px; color: var(--text-muted); }
+.eval-res--ok, .eval-res--fail { display: inline-flex; align-items: center; vertical-align: middle; }
+
+.eval-url-muted { color: var(--text-muted); }
+
 /* Variants — inline result value icons */
 .eval-res--ok   svg { color: var(--accent-3); }
 .eval-res--fail svg { color: var(--danger); }
