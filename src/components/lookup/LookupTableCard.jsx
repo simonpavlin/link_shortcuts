@@ -5,7 +5,7 @@ import { TagInput } from './TagInput'
 import { IconPlus, IconLink, IconTrash, IconMoreDots, IconCopy } from '../shared/icons'
 
 const buildLookupUrl = (tableKey) =>
-  `${window.location.origin}/lookup/?param=${encodeURIComponent(tableKey)}+%s`
+  `${window.location.origin}/?q=lookup+${encodeURIComponent(tableKey)}+%s`
 
 // ── 3-dot menu with duplicate + delete confirmation ───────────────────────────
 const MoreMenu = ({ onDuplicate, onDelete }) => {

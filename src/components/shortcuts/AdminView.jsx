@@ -68,7 +68,7 @@ export const AdminView = ({ prefillCommand, prefillParam }) => {
         </h1>
         <p className="page-hero-desc">
           Map <strong>command keys</strong> to URL patterns via regex rules.
-          Navigate to <strong>?param=key+value</strong> to redirect instantly.
+          Navigate to <strong>?q=shortcuts+key+value</strong> to redirect instantly.
         </p>
       </div>
 

@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { TagBadge } from './TagBadge'
 import { IconArrowRight } from '../shared/icons'
+import { resolveUrl } from '../../utils/url.utils'
 
 export const LookupPickerView = ({ table, entries, tags }) => (
   <div className="lookup-picker-page module-lookup">
@@ -22,7 +23,7 @@ export const LookupPickerView = ({ table, entries, tags }) => (
       {entries.map((entry, i) => (
         <a
           key={entry.id}
-          href={entry.url}
+          href={resolveUrl(entry.url)}
           className="lookup-picker-item"
           style={{ animationDelay: `${i * 0.06}s` }}
         >

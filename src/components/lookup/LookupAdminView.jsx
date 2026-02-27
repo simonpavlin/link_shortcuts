@@ -56,7 +56,7 @@ export const LookupAdminView = () => {
         </h1>
         <p className="page-hero-desc">
           Create <strong>tagged entries</strong> and link them to URLs.
-          Navigate to <strong>?param=key+tag1+tag2</strong> to find and jump to matching links.
+          Navigate to <strong>?q=lookup+key+tag1+tag2</strong> to find and jump to matching links.
         </p>
       </div>
 
