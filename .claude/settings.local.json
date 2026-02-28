@@ -17,7 +17,8 @@
       "Bash(npx eslint --version 2>&1)",
       "Bash(npm ls eslint @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint-plugin-react 2>&1 | head -10)",
       "Bash(npx eslint src/ 2>&1 | head -40)",
-      "Bash(npx eslint src/ 2>&1)"
+      "Bash(npx eslint src/ 2>&1)",
+      "Bash(npx tsc --noEmit 2>&1)"
     ]
   }
 }
