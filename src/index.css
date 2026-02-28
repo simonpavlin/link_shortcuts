@@ -1696,7 +1696,8 @@ select.input option { background: #1a1a24; color: var(--text); }
   animation: fadeUp 0.25s ease both;
   transition: border-color var(--t), background var(--t), box-shadow var(--t);
 }
-.find-picker-item:hover {
+.find-picker-item:hover,
+.find-picker-item-focused {
   border-color: var(--border-hover);
   background: var(--surface-hover);
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.18);
@@ -1741,7 +1742,8 @@ select.input option { background: #1a1a24; color: var(--text); }
   align-items: center;
   transition: color var(--t), transform var(--t);
 }
-.find-picker-item:hover .find-picker-item-arrow {
+.find-picker-item:hover .find-picker-item-arrow,
+.find-picker-item-focused .find-picker-item-arrow {
   color: var(--accent-1);
   transform: translateX(3px);
 }
