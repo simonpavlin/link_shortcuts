@@ -1,21 +1,21 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
-import { PATTERN_TYPES } from '../../utils/shortcuts.utils'
+import { PATTERN_TYPES } from '../../utils/go.utils'
 import { PatternField } from './PatternField'
 import { DeleteConfirm } from '../shared/DeleteConfirm'
 import { IconDrag, IconArrowRight, IconCheck, IconX, IconMinus } from '../shared/icons'
-import type { Rule, RuleResult, PatternTypeName } from '../../utils/shortcuts.utils'
+import type { GoRule, GoRuleResult, PatternTypeName } from '../../utils/go.utils'
 
 type Props = {
-  rule: Rule
-  matchResult: RuleResult | null
+  rule: GoRule
+  matchResult: GoRuleResult | null
   testParam: string
   testIndex: number
   onSave: (data: { pattern: string; url: string; patternType: PatternTypeName; label: string }) => void
   onDelete: () => void
 }
 
-export const RuleRow = ({
+export const GoRuleRow = ({
   rule,
   matchResult,
   testParam,
@@ -80,7 +80,7 @@ export const RuleRow = ({
     doSave()
   }
 
-  // First col: testing → ✓/✗/–, default → drag handle
+  // First col: testing → check/x/minus, default → drag handle
   const firstCol = () => {
     if (matchResult !== null) {
       const delay = { animationDelay: `${testIndex * 0.07}s` }

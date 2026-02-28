@@ -1,6 +1,6 @@
 # Linker
 
-Smart browser custom search engine SPA. Evaluates regex-based rules (Shortcuts) and tag-based tables (Lookup) to redirect users based on input.
+Smart browser custom search engine SPA. Evaluates regex-based conditions (Go) and tag-based tables (Find) to redirect users based on input.
 
 ## Stack
 
@@ -22,9 +22,9 @@ npm run lint      # ESLint
 
 Unified entry at `/?q=KEY+VALUE`. Two admin sub-apps:
 
-- `/` → `CommandRouter` — resolves query: shortcuts → lookup → admin fallback
-- `/go/` → `ShortcutsPage` — admin for regex-based redirect rules
-- `/find/` → `LookupPage` — admin for tag-based lookup tables
+- `/` → `CommandRouter` — resolves query: go conditions → find tables → admin fallback
+- `/go/` → `GoPage` — admin for regex-based redirect conditions
+- `/find/` → `FindPage` — admin for tag-based find tables
 
 State lives in `useLocalStorage` hook → localStorage keys: `linker_shortcuts`, `linker_lookup`, `linker_theme`.
 
@@ -51,12 +51,12 @@ These are enforced by ESLint (`eslint.config.js`) and must be followed in all ne
 src/
   components/
     shared/         # Reusable UI (Layout, icons, AddCardForm, etc.)
-    shortcuts/      # Shortcuts module (go)
-    lookup/         # Lookup module (find)
+    go/             # Go module (conditions)
+    find/           # Find module (tables)
     CommandRouter.tsx
     HomePage.tsx
   hooks/            # Custom hooks (useLocalStorage, useInlineEdit)
-  utils/            # Pure logic (evaluate, shortcuts.utils, lookup.utils, url.utils)
+  utils/            # Pure logic (evaluate, go.utils, find.utils, url.utils)
 ```
 
 ### Naming
@@ -79,4 +79,4 @@ src/
 - All styles in `src/index.css` — no CSS modules
 - Use existing CSS custom properties (`--bg`, `--surface`, `--border`, `--text`, `--accent-1`, etc.)
 - Dark mode is default, light mode via `[data-theme="light"]`
-- Module accent: `.module-shortcuts` → blue, `.module-lookup` → purple
+- Module accent: `.module-go` → blue, `.module-find` → purple

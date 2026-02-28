@@ -13,21 +13,21 @@ import {
   verticalListSortingStrategy,
   arrayMove,
 } from '@dnd-kit/sortable'
-import { RuleRow } from './RuleRow'
+import { GoRuleRow } from './GoRuleRow'
 import { PendingRows } from './PendingRows'
-import type { Rule, RuleResult } from '../../utils/shortcuts.utils'
+import type { GoRule, GoRuleResult } from '../../utils/go.utils'
 
 type Props = {
-  rules: Rule[]
-  testResults: Record<string, RuleResult> | null
+  rules: GoRule[]
+  testResults: Record<string, GoRuleResult> | null
   testParam: string
-  onReorder: (newRules: Rule[]) => void
-  onAdd: (ruleData: Partial<Rule>) => void
-  onUpdate: (ruleId: string, ruleData: Partial<Rule>) => void
+  onReorder: (newRules: GoRule[]) => void
+  onAdd: (ruleData: Partial<GoRule>) => void
+  onUpdate: (ruleId: string, ruleData: Partial<GoRule>) => void
   onDelete: (ruleId: string) => void
 }
 
-export const RuleList = ({
+export const GoRuleList = ({
   rules,
   testResults,
   testParam,
@@ -55,7 +55,7 @@ export const RuleList = ({
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
           {rules.map((rule, idx) => (
-            <RuleRow
+            <GoRuleRow
               key={rule.id}
               rule={rule}
               matchResult={testResults ? (testResults[rule.id] ?? null) : null}

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
-import type { LookupTable } from '../../utils/lookup.utils'
+import type { FindTable } from '../../utils/find.utils'
 import {
   addTable,
   updateTable,
@@ -9,21 +9,21 @@ import {
   addEntry,
   updateEntry,
   deleteEntry,
-} from '../../utils/lookup.utils'
-import { LookupTableCard } from './LookupTableCard'
+} from '../../utils/find.utils'
+import { FindTableCard } from './FindTableCard'
 import { DataPorter } from '../shared/DataPorter'
 import { GlobalTestInput } from '../shared/GlobalTestInput'
 import { AddCardForm } from '../shared/AddCardForm'
 
 const STORAGE_KEY = 'linker_lookup'
-const INITIAL: { tables: LookupTable[] } = { tables: [] }
+const INITIAL: { tables: FindTable[] } = { tables: [] }
 
-export const LookupAdminView = () => {
-  const [data, setData] = useLocalStorage<{ tables: LookupTable[] }>(STORAGE_KEY, INITIAL)
+export const FindAdminView = () => {
+  const [data, setData] = useLocalStorage<{ tables: FindTable[] }>(STORAGE_KEY, INITIAL)
   const [testInput, setTestInput] = useState('')
 
   const { tables } = data
-  const mutate = (newTables: LookupTable[]) => setData({ tables: newTables })
+  const mutate = (newTables: FindTable[]) => setData({ tables: newTables })
 
   const spaceIdx = testInput.indexOf(' ')
   const testKey = spaceIdx === -1 ? (testInput.trim() || null) : (testInput.slice(0, spaceIdx) || null)
@@ -57,13 +57,13 @@ export const LookupAdminView = () => {
         placeholder="Test: projects react typescript"
       />
 
-      <div className="shortcuts-stack">
+      <div className="find-stack">
         {tables.length === 0 && (
           <p className="empty-hint">No tables yet — add one below.</p>
         )}
 
         {tables.map((t, i) => (
-          <LookupTableCard
+          <FindTableCard
             key={t.id}
             table={t}
             animationDelay={i * 0.07}
@@ -92,8 +92,8 @@ export const LookupAdminView = () => {
         <DataPorter
           data={tables}
           dataKey="tables"
-          filename="linker-lookup.json"
-          onImport={(val) => mutate(val as LookupTable[])}
+          filename="linker-find.json"
+          onImport={(val) => mutate(val as FindTable[])}
         />
       </div>
     </div>

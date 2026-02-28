@@ -1,29 +1,29 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { evaluateQuery } from '../utils/evaluate'
-import type { Shortcut } from '../utils/shortcuts.utils'
-import type { LookupTable, LookupEntry } from '../utils/lookup.utils'
-import { LookupPickerView } from './lookup/LookupPickerView'
+import type { GoCondition } from '../utils/go.utils'
+import type { FindTable, FindEntry } from '../utils/find.utils'
+import { FindPickerView } from './find/FindPickerView'
 import { HomePage } from './HomePage'
 
 const SHORTCUTS_KEY = 'linker_shortcuts'
 const LOOKUP_KEY = 'linker_lookup'
 
 type PickerData = {
-  table: LookupTable
-  entries: LookupEntry[]
+  table: FindTable
+  entries: FindEntry[]
   tags: string[]
   params: Record<string, string>
 } | null
 
-const readShortcuts = (): Shortcut[] => {
+const readConditions = (): GoCondition[] => {
   try {
     const parsed = JSON.parse(localStorage.getItem(SHORTCUTS_KEY) ?? 'null')
     return Array.isArray(parsed?.shortcuts) ? parsed.shortcuts : []
   } catch { return [] }
 }
 
-const readTables = (): LookupTable[] => {
+const readTables = (): FindTable[] => {
   try {
     const parsed = JSON.parse(localStorage.getItem(LOOKUP_KEY) ?? 'null')
     return Array.isArray(parsed?.tables) ? parsed.tables : []
@@ -47,7 +47,7 @@ export const CommandRouter = () => {
   const urlParamsStr = JSON.stringify(urlParams)
 
   const { result } = useMemo(
-    () => evaluateQuery(rawQ, readShortcuts(), readTables(), window.location.origin, urlParams),
+    () => evaluateQuery(rawQ, readConditions(), readTables(), window.location.origin, urlParams),
     [rawQ, urlParamsStr], // eslint-disable-line react-hooks/exhaustive-deps
   )
 
@@ -63,7 +63,7 @@ export const CommandRouter = () => {
 
   if (pickerData) {
     return (
-      <LookupPickerView
+      <FindPickerView
         table={pickerData.table}
         entries={pickerData.entries}
         tags={pickerData.tags}

@@ -1,8 +1,8 @@
 import { useState, useRef } from 'react'
-import { PATTERN_TYPES } from '../../utils/shortcuts.utils'
+import { PATTERN_TYPES } from '../../utils/go.utils'
 import { PatternField } from './PatternField'
 import { IconArrowRight } from '../shared/icons'
-import type { PatternTypeName } from '../../utils/shortcuts.utils'
+import type { PatternTypeName } from '../../utils/go.utils'
 
 type PendingRow = {
   id: number

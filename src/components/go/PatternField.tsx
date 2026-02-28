@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
-import { PATTERN_TYPES } from '../../utils/shortcuts.utils'
+import { PATTERN_TYPES } from '../../utils/go.utils'
 import { IconChevronDown } from '../shared/icons'
-import type { PatternTypeName } from '../../utils/shortcuts.utils'
+import type { PatternTypeName } from '../../utils/go.utils'
 
 const PRESET_OPTIONS: PatternTypeName[] = ['number', 'string', 'url', 'empty', 'const', 'regex']
 

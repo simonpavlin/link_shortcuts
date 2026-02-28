@@ -1,17 +1,17 @@
 import { useState, useRef } from 'react'
-import type { LookupEntry } from '../../utils/lookup.utils'
+import type { FindEntry } from '../../utils/find.utils'
 import { TagBadge } from './TagBadge'
 import { TagInput } from './TagInput'
 import { DeleteConfirm } from '../shared/DeleteConfirm'
 
 type Props = {
-  entry: LookupEntry
+  entry: FindEntry
   allTags: string[]
-  onUpdate: (entryId: string, data: Partial<LookupEntry>) => void
+  onUpdate: (entryId: string, data: Partial<FindEntry>) => void
   onDelete: (entryId: string) => void
 }
 
-export const LookupEntryRow = ({ entry, allTags, onUpdate, onDelete }: Props) => {
+export const FindEntryRow = ({ entry, allTags, onUpdate, onDelete }: Props) => {
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState<{ description: string; tags: string[]; url: string } | null>(null)
   const cancelledRef = useRef(false)
@@ -45,7 +45,7 @@ export const LookupEntryRow = ({ entry, allTags, onUpdate, onDelete }: Props) =>
   if (editing && form) {
     return (
       <div
-        className="lookup-entry-edit"
+        className="find-entry-edit"
         onBlur={handleContainerBlur}
       >
         <input
@@ -75,15 +75,15 @@ export const LookupEntryRow = ({ entry, allTags, onUpdate, onDelete }: Props) =>
   }
 
   return (
-    <div className="lookup-entry-row" onClick={startEdit} title="Click to edit">
-      <div className="lookup-entry-desc">
-        {entry.description || <span className="lookup-entry-ghost">no description</span>}
+    <div className="find-entry-row" onClick={startEdit} title="Click to edit">
+      <div className="find-entry-desc">
+        {entry.description || <span className="find-entry-ghost">no description</span>}
       </div>
-      <div className="lookup-entry-tags">
+      <div className="find-entry-tags">
         {entry.tags.map((t) => <TagBadge key={t} tag={t} />)}
       </div>
       <a
-        className="lookup-entry-url"
+        className="find-entry-url"
         href={entry.url}
         target="_blank"
         rel="noreferrer"
@@ -92,7 +92,7 @@ export const LookupEntryRow = ({ entry, allTags, onUpdate, onDelete }: Props) =>
         {entry.url}
       </a>
       <DeleteConfirm
-        className="lookup-entry-actions"
+        className="find-entry-actions"
         onDelete={() => onDelete(entry.id)}
         iconTitle="Delete entry"
         stopPropagation

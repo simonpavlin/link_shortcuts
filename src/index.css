@@ -76,7 +76,7 @@ html { zoom: 1.25; }
   background: rgba(230, 230, 235, 0.94);
 }
 
-/* Add shortcut dashed button */
+/* Add condition dashed button */
 [data-theme="light"] .add-card-btn {
   border-color: #c0c0cc;
 }
@@ -131,8 +131,8 @@ html { zoom: 1.25; }
   color: #0d0d10;
 }
 
-/* Shortcut key badge – keep blue tint but darken border */
-[data-theme="light"] .shortcut-key-badge {
+/* Go key badge – keep blue tint but darken border */
+[data-theme="light"] .go-key-badge {
   background: rgba(var(--accent-1-rgb), 0.12);
   border-color: rgba(var(--accent-1-rgb), 0.40);
 }
@@ -309,7 +309,8 @@ a:hover { text-decoration: underline; }
 /* =====================================================
    SHORTCUTS STACK
    ===================================================== */
-.shortcuts-stack {
+.go-stack,
+.find-stack {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -326,33 +327,33 @@ a:hover { text-decoration: underline; }
 /* =====================================================
    SHORTCUT CARD
    ===================================================== */
-.shortcut-card-wrap {
+.go-card-wrap {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.shortcut-card-label {
+.go-card-label {
   padding: 0 4px;
   min-height: 16px;
   display: flex;
   align-items: center;
 }
 
-.shortcut-card-label-text {
+.go-card-label-text {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-muted);
   letter-spacing: 0.03em;
 }
 
-.shortcut-card-label-text.editable {
+.go-card-label-text.editable {
   cursor: text;
   transition: color var(--t);
 }
-.shortcut-card-label-text.editable:hover { color: var(--text); }
+.go-card-label-text.editable:hover { color: var(--text); }
 
-.shortcut-card-label-input {
+.go-card-label-input {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-secondary);
@@ -366,7 +367,7 @@ a:hover { text-decoration: underline; }
   max-width: 260px;
 }
 
-.shortcut-card-label-ghost {
+.go-card-label-ghost {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-label);
@@ -375,16 +376,16 @@ a:hover { text-decoration: underline; }
   transition: opacity var(--t);
   letter-spacing: 0.03em;
 }
-.shortcut-card-wrap:hover .shortcut-card-label-ghost { opacity: 0.55; }
-.shortcut-card-label-ghost:hover { opacity: 1 !important; }
+.go-card-wrap:hover .go-card-label-ghost { opacity: 0.55; }
+.go-card-label-ghost:hover { opacity: 1 !important; }
 
-.shortcut-card {
+.go-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
 
-.shortcut-card-header {
+.go-card-header {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -393,7 +394,7 @@ a:hover { text-decoration: underline; }
   min-height: 46px;
 }
 
-.shortcut-key-badge {
+.go-key-badge {
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 500;
@@ -406,7 +407,7 @@ a:hover { text-decoration: underline; }
   letter-spacing: 0.02em;
 }
 
-.shortcut-card-name {
+.go-card-name {
   font-size: 12px;
   color: var(--text-secondary);
   white-space: nowrap;
@@ -423,10 +424,10 @@ a:hover { text-decoration: underline; }
   opacity: 0;
   transition: opacity var(--t);
 }
-.shortcut-card-header:hover .header-actions { opacity: 1; }
+.go-card-header:hover .header-actions { opacity: 1; }
 
 /* Inline key input – styled like the badge */
-.shortcut-key-input {
+.go-key-input {
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 500;
@@ -442,17 +443,17 @@ a:hover { text-decoration: underline; }
 }
 
 /* Key badge clickable state */
-.shortcut-key-badge--editable {
+.go-key-badge--editable {
   cursor: text;
   transition: background var(--t), border-color var(--t);
 }
-.shortcut-key-badge--editable:hover {
+.go-key-badge--editable:hover {
   background: rgba(var(--accent-1-rgb), 0.22);
   border-color: rgba(var(--accent-1-rgb), 0.45);
 }
 
 /* Inline name input – looks like plain text */
-.shortcut-name-input {
+.go-name-input {
   font-size: 12px;
   color: var(--text-secondary);
   background: transparent;
@@ -467,14 +468,14 @@ a:hover { text-decoration: underline; }
 }
 
 /* Name clickable state */
-.shortcut-card-name--editable {
+.go-card-name--editable {
   cursor: text;
   transition: color var(--t);
 }
-.shortcut-card-name--editable:hover { color: var(--text); }
+.go-card-name--editable:hover { color: var(--text); }
 
 /* Ghost name (when name is empty) */
-.shortcut-name-ghost {
+.go-name-ghost {
   font-size: 11px;
   color: var(--text-label);
   cursor: pointer;
@@ -482,14 +483,14 @@ a:hover { text-decoration: underline; }
   transition: opacity var(--t);
   letter-spacing: 0.03em;
 }
-.shortcut-card-header:hover .shortcut-name-ghost { opacity: 0.55; }
-.shortcut-name-ghost:hover { opacity: 1 !important; }
+.go-card-header:hover .go-name-ghost { opacity: 0.55; }
+.go-name-ghost:hover { opacity: 1 !important; }
 
 /* Legacy form fields still used when manually triggered */
 .input-key { width: 72px; flex-shrink: 0; }
 .header-edit-actions { display: flex; gap: 6px; flex-shrink: 0; }
 
-/* Add shortcut button (dashed card) */
+/* Add condition button (dashed card) */
 .add-card-btn {
   display: flex;
   align-items: center;
@@ -512,8 +513,8 @@ a:hover { text-decoration: underline; }
   background: var(--surface);
 }
 
-/* Add shortcut inline form */
-.add-shortcut-form {
+/* Add condition inline form */
+.add-go-form {
   padding: 12px 14px;
   display: flex;
   align-items: center;
@@ -755,7 +756,7 @@ a:hover { text-decoration: underline; }
   transition: color var(--t), background var(--t), opacity var(--t);
   line-height: 0;
 }
-.shortcut-card-header:hover .lock-btn { opacity: 1; }
+.go-card-header:hover .lock-btn { opacity: 1; }
 .lock-btn:hover { color: var(--text-secondary); background: var(--surface-active); }
 .lock-btn.active { opacity: 1; color: var(--accent-1); }
 
@@ -1409,13 +1410,13 @@ select.input option { background: #1a1a24; color: var(--text); }
   stroke-dasharray: 16;
   animation: checkDraw 0.35s cubic-bezier(0.4, 0, 0.2, 1) 0.12s both;
 }
-.shortcut-card-wrap {
+.go-card-wrap {
   animation: fadeUp 0.3s ease both;
   position: relative;
   z-index: 0;
 }
-.shortcut-card-wrap:has(.pattern-dropdown-menu),
-.shortcut-card-wrap:has(.more-menu-dropdown) {
+.go-card-wrap:has(.pattern-dropdown-menu),
+.go-card-wrap:has(.more-menu-dropdown) {
   z-index: 100;
 }
 
@@ -1543,13 +1544,13 @@ select.input option { background: #1a1a24; color: var(--text); }
 /* =====================================================
    LOOKUP ENTRY LIST
    ===================================================== */
-.lookup-entry-list {
+.find-entry-list {
   display: flex;
   flex-direction: column;
   border-top: 1px solid var(--border);
 }
 
-.lookup-entry-row {
+.find-entry-row {
   display: grid;
   grid-template-columns: 2fr 3fr 3fr auto;
   gap: 12px;
@@ -1559,10 +1560,10 @@ select.input option { background: #1a1a24; color: var(--text); }
   border-bottom: 1px solid var(--border);
   transition: background var(--t);
 }
-.lookup-entry-row:last-child { border-bottom: none; }
-.lookup-entry-row:hover { background: var(--surface-hover); }
+.find-entry-row:last-child { border-bottom: none; }
+.find-entry-row:hover { background: var(--surface-hover); }
 
-.lookup-entry-desc {
+.find-entry-desc {
   font-size: 12px;
   color: var(--text);
   white-space: nowrap;
@@ -1570,18 +1571,18 @@ select.input option { background: #1a1a24; color: var(--text); }
   text-overflow: ellipsis;
 }
 
-.lookup-entry-ghost {
+.find-entry-ghost {
   color: var(--text-label);
   font-style: italic;
 }
 
-.lookup-entry-tags {
+.find-entry-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
 }
 
-.lookup-entry-url {
+.find-entry-url {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-muted);
@@ -1591,20 +1592,20 @@ select.input option { background: #1a1a24; color: var(--text); }
   text-decoration: none;
   transition: color var(--t);
 }
-.lookup-entry-url:hover { color: var(--accent-1); text-decoration: underline; }
+.find-entry-url:hover { color: var(--accent-1); text-decoration: underline; }
 
-.lookup-entry-actions {
+.find-entry-actions {
   display: flex;
   justify-content: flex-end;
   opacity: 0;
   transition: opacity var(--t);
 }
-.lookup-entry-row:hover .lookup-entry-actions { opacity: 1; }
+.find-entry-row:hover .find-entry-actions { opacity: 1; }
 
 /* =====================================================
    LOOKUP ENTRY EDIT / ADD FORMS
    ===================================================== */
-.lookup-entry-edit {
+.find-entry-edit {
   padding: 10px 14px;
   display: flex;
   flex-direction: column;
@@ -1615,7 +1616,7 @@ select.input option { background: #1a1a24; color: var(--text); }
   margin: 4px 8px;
 }
 
-.lookup-add-entry-form {
+.find-add-entry-form {
   padding: 10px 14px;
   display: flex;
   flex-direction: column;
@@ -1623,14 +1624,14 @@ select.input option { background: #1a1a24; color: var(--text); }
   border-top: 1px solid var(--border);
 }
 
-.lookup-no-matches {
+.find-no-matches {
   padding: 10px 14px;
   font-size: 11px;
   color: var(--text-label);
   letter-spacing: 0.04em;
 }
 
-.lookup-add-entry-btn {
+.find-add-entry-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1646,44 +1647,44 @@ select.input option { background: #1a1a24; color: var(--text); }
   cursor: pointer;
   transition: color var(--t), background var(--t);
 }
-.lookup-add-entry-btn:hover {
+.find-add-entry-btn:hover {
   color: var(--text-muted);
   background: var(--surface-hover);
 }
 
-[data-theme="light"] .lookup-add-entry-btn {
+[data-theme="light"] .find-add-entry-btn {
   border-top-color: #d0d0d8;
 }
 
 /* =====================================================
    LOOKUP PICKER VIEW (redirect → multiple matches)
    ===================================================== */
-.lookup-picker-page {
+.find-picker-page {
   max-width: var(--content-width);
   margin: 0 auto;
   padding: 44px 20px 88px;
 }
 
-.lookup-picker-header {
+.find-picker-header {
   margin-bottom: 32px;
   animation: fadeUp 0.35s ease both;
 }
 
-.lookup-picker-tags {
+.find-picker-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 14px;
 }
 
-.lookup-picker-list {
+.find-picker-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-bottom: 24px;
 }
 
-.lookup-picker-item {
+.find-picker-item {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -1695,14 +1696,14 @@ select.input option { background: #1a1a24; color: var(--text); }
   animation: fadeUp 0.25s ease both;
   transition: border-color var(--t), background var(--t), box-shadow var(--t);
 }
-.lookup-picker-item:hover {
+.find-picker-item:hover {
   border-color: var(--border-hover);
   background: var(--surface-hover);
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.18);
   text-decoration: none;
 }
 
-.lookup-picker-item-main {
+.find-picker-item-main {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -1710,19 +1711,19 @@ select.input option { background: #1a1a24; color: var(--text); }
   gap: 6px;
 }
 
-.lookup-picker-item-desc {
+.find-picker-item-desc {
   font-size: 13px;
   font-weight: 500;
   color: var(--text);
 }
 
-.lookup-picker-item-tags {
+.find-picker-item-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
 }
 
-.lookup-picker-item-url {
+.find-picker-item-url {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-muted);
@@ -1733,25 +1734,25 @@ select.input option { background: #1a1a24; color: var(--text); }
   flex-shrink: 0;
 }
 
-.lookup-picker-item-arrow {
+.find-picker-item-arrow {
   color: var(--text-label);
   flex-shrink: 0;
   display: flex;
   align-items: center;
   transition: color var(--t), transform var(--t);
 }
-.lookup-picker-item:hover .lookup-picker-item-arrow {
+.find-picker-item:hover .find-picker-item-arrow {
   color: var(--accent-1);
   transform: translateX(3px);
 }
 
-.lookup-picker-back {
+.find-picker-back {
   font-size: 11px;
   color: var(--text-muted);
   text-decoration: none;
   letter-spacing: 0.03em;
 }
-.lookup-picker-back:hover { color: var(--text); text-decoration: underline; }
+.find-picker-back:hover { color: var(--text); text-decoration: underline; }
 
 /* =====================================================
    HOME PAGE
@@ -1897,7 +1898,7 @@ select.input option { background: #1a1a24; color: var(--text); }
 .home-picker {
   margin-top: 4px;
 }
-.home-picker .lookup-picker-page {
+.home-picker .find-picker-page {
   margin: 0;
   padding: 0;
 }
@@ -1911,15 +1912,15 @@ select.input option { background: #1a1a24; color: var(--text); }
   .rule-form-row > *:nth-child(2) { display: none; }
   .page-footer-fixed { right: 14px; bottom: 14px; }
 
-  .lookup-entry-row {
+  .find-entry-row {
     grid-template-columns: 1fr auto;
     grid-template-rows: auto auto auto;
   }
-  .lookup-entry-desc { grid-column: 1; grid-row: 1; }
-  .lookup-entry-actions { grid-column: 2; grid-row: 1; opacity: 1; }
-  .lookup-entry-tags { grid-column: 1 / -1; grid-row: 2; }
-  .lookup-entry-url { grid-column: 1 / -1; grid-row: 3; }
+  .find-entry-desc { grid-column: 1; grid-row: 1; }
+  .find-entry-actions { grid-column: 2; grid-row: 1; opacity: 1; }
+  .find-entry-tags { grid-column: 1 / -1; grid-row: 2; }
+  .find-entry-url { grid-column: 1 / -1; grid-row: 3; }
 
-  .lookup-picker-item { flex-wrap: wrap; }
-  .lookup-picker-item-url { max-width: 100%; }
+  .find-picker-item { flex-wrap: wrap; }
+  .find-picker-item-url { max-width: 100%; }
 }

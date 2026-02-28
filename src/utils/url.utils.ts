@@ -13,12 +13,12 @@ export function parseSearchParams(searchParams: URLSearchParams): {
   }
 }
 
-export function buildBrowserUrl(origin: string, shortcutKey: string): string {
-  return `${origin}/?q=shortcuts+${encodeURIComponent(shortcutKey)}+%s`
+export function buildGoUrl(origin: string, conditionKey: string): string {
+  return `${origin}/?q=go+${encodeURIComponent(conditionKey)}+%s`
 }
 
-export function buildLookupUrl(origin: string, tableKey: string): string {
-  return `${origin}/?q=lookup+${encodeURIComponent(tableKey)}+%s`
+export function buildFindUrl(origin: string, tableKey: string): string {
+  return `${origin}/?q=find+${encodeURIComponent(tableKey)}+%s`
 }
 
 export function resolveUrl(raw: string): string {

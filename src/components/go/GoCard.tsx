@@ -1,28 +1,28 @@
 import { useState } from 'react'
-import { evaluateRules } from '../../utils/shortcuts.utils'
-import { buildBrowserUrl } from '../../utils/url.utils'
+import { evaluateRules } from '../../utils/go.utils'
+import { buildGoUrl } from '../../utils/url.utils'
 import { useInlineEdit } from '../../hooks/useInlineEdit'
-import { RuleList } from './RuleList'
+import { GoRuleList } from './GoRuleList'
 import { MoreMenu } from '../shared/MoreMenu'
 import { IconLink, IconCheck } from '../shared/icons'
-import type { Shortcut, Rule } from '../../utils/shortcuts.utils'
+import type { GoCondition, GoRule } from '../../utils/go.utils'
 
 type Props = {
-  shortcut: Shortcut
+  condition: GoCondition
   animationDelay?: number
   globalCommand: string | null
   globalParam: string | null
   onUpdate: (id: string, data: { key: string; name: string }) => void
   onDelete: (id: string) => void
   onDuplicate: (id: string) => void
-  onAddRule: (shortcutId: string, ruleData: Partial<Rule>) => void
-  onUpdateRule: (shortcutId: string, ruleId: string, ruleData: Partial<Rule>) => void
-  onDeleteRule: (shortcutId: string, ruleId: string) => void
-  onReorderRules: (shortcutId: string, newRules: Rule[]) => void
+  onAddRule: (conditionId: string, ruleData: Partial<GoRule>) => void
+  onUpdateRule: (conditionId: string, ruleId: string, ruleData: Partial<GoRule>) => void
+  onDeleteRule: (conditionId: string, ruleId: string) => void
+  onReorderRules: (conditionId: string, newRules: GoRule[]) => void
 }
 
-export const ShortcutCard = ({
-  shortcut,
+export const GoCard = ({
+  condition,
   animationDelay,
   globalCommand,
   globalParam,
@@ -39,32 +39,32 @@ export const ShortcutCard = ({
   const [copied, setCopied] = useState(false)
 
   const keyEdit = useInlineEdit(
-    shortcut.key,
-    (trimmed) => onUpdate(shortcut.id, { key: trimmed, name: shortcut.name }),
+    condition.key,
+    (trimmed) => onUpdate(condition.id, { key: trimmed, name: condition.name }),
     { allowEmpty: false },
   )
 
   const nameEdit = useInlineEdit(
-    shortcut.name,
-    (trimmed) => onUpdate(shortcut.id, { key: shortcut.key, name: trimmed }),
+    condition.name,
+    (trimmed) => onUpdate(condition.id, { key: condition.key, name: trimmed }),
     { allowEmpty: true },
   )
 
   // ── Copy browser URL ────────────────────────────────────────────────────
   const handleCopy = () => {
-    navigator.clipboard.writeText(buildBrowserUrl(window.location.origin, shortcut.key)).then(() => {
+    navigator.clipboard.writeText(buildGoUrl(window.location.origin, condition.key)).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     })
   }
 
   // ── Rule test results ─────────────────────────────────────────────────────
-  const isGlobalMatch = globalCommand === shortcut.key && globalParam !== null
+  const isGlobalMatch = globalCommand === condition.key && globalParam !== null
   const activeTestParam = testParam || (isGlobalMatch ? (globalParam ?? '') : '')
   const isTesting = testFocused || isGlobalMatch
 
   const allResults = isTesting
-    ? evaluateRules(shortcut.rules, activeTestParam)
+    ? evaluateRules(condition.rules, activeTestParam)
     : null
   const firstMatchIdx = allResults ? allResults.findIndex((r) => r.matched) : -1
   const testResults = allResults
@@ -81,14 +81,14 @@ export const ShortcutCard = ({
 
   return (
     <div
-      className="shortcut-card-wrap"
+      className="go-card-wrap"
       style={animationDelay ? { animationDelay: `${animationDelay}s` } : undefined}
     >
       {/* Name label above the card */}
-      <div className="shortcut-card-label">
+      <div className="go-card-label">
         {nameEdit.editing ? (
           <input
-            className="shortcut-card-label-input"
+            className="go-card-label-input"
             value={nameEdit.editValue}
             onChange={(e) => nameEdit.setEditValue(e.target.value)}
             onBlur={nameEdit.commitEdit}
@@ -99,27 +99,27 @@ export const ShortcutCard = ({
             placeholder="name"
             autoFocus
           />
-        ) : shortcut.name ? (
+        ) : condition.name ? (
           <span
-            className="shortcut-card-label-text editable"
+            className="go-card-label-text editable"
             onClick={nameEdit.startEdit}
             title="Click to edit name"
           >
-            {shortcut.name}
+            {condition.name}
           </span>
         ) : (
-          <span className="shortcut-card-label-ghost" onClick={nameEdit.startEdit}>
+          <span className="go-card-label-ghost" onClick={nameEdit.startEdit}>
             add name
           </span>
         )}
       </div>
 
-      <div className={`shortcut-card${isTesting && !hasNoMatch ? ' card-global-match' : ''}${isTesting && hasNoMatch ? ' card-no-match' : ''}`}>
-        <div className="shortcut-card-header">
+      <div className={`go-card${isTesting && !hasNoMatch ? ' card-global-match' : ''}${isTesting && hasNoMatch ? ' card-no-match' : ''}`}>
+        <div className="go-card-header">
           {/* Key badge – click to edit inline */}
           {keyEdit.editing ? (
             <input
-              className="shortcut-key-badge shortcut-key-input"
+              className="go-key-badge go-key-input"
               value={keyEdit.editValue}
               onChange={(e) => keyEdit.setEditValue(e.target.value)}
               onBlur={keyEdit.commitEdit}
@@ -131,11 +131,11 @@ export const ShortcutCard = ({
             />
           ) : (
             <span
-              className="shortcut-key-badge shortcut-key-badge--editable"
+              className="go-key-badge go-key-badge--editable"
               onClick={keyEdit.startEdit}
               title="Click to edit key"
             >
-              {shortcut.key}
+              {condition.key}
             </span>
           )}
 
@@ -160,20 +160,20 @@ export const ShortcutCard = ({
 
           <div className="header-actions">
             <MoreMenu
-              onDuplicate={() => onDuplicate(shortcut.id)}
-              onDelete={() => onDelete(shortcut.id)}
+              onDuplicate={() => onDuplicate(condition.id)}
+              onDelete={() => onDelete(condition.id)}
             />
           </div>
         </div>
 
-        <RuleList
-          rules={shortcut.rules}
+        <GoRuleList
+          rules={condition.rules}
           testResults={testResults}
           testParam={activeTestParam}
-          onReorder={(newRules) => onReorderRules(shortcut.id, newRules)}
-          onAdd={(ruleData) => onAddRule(shortcut.id, ruleData)}
-          onUpdate={(ruleId, ruleData) => onUpdateRule(shortcut.id, ruleId, ruleData)}
-          onDelete={(ruleId) => onDeleteRule(shortcut.id, ruleId)}
+          onReorder={(newRules) => onReorderRules(condition.id, newRules)}
+          onAdd={(ruleData) => onAddRule(condition.id, ruleData)}
+          onUpdate={(ruleId, ruleData) => onUpdateRule(condition.id, ruleId, ruleData)}
+          onDelete={(ruleId) => onDeleteRule(condition.id, ruleId)}
         />
       </div>
     </div>

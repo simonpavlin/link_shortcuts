@@ -1,27 +1,27 @@
 import { useState } from 'react'
-import type { LookupTable, LookupEntry } from '../../utils/lookup.utils'
-import { getAllTagsForTable, searchEntries } from '../../utils/lookup.utils'
-import { buildLookupUrl } from '../../utils/url.utils'
+import type { FindTable, FindEntry } from '../../utils/find.utils'
+import { getAllTagsForTable, searchEntries } from '../../utils/find.utils'
+import { buildFindUrl } from '../../utils/url.utils'
 import { useInlineEdit } from '../../hooks/useInlineEdit'
-import { LookupEntryRow } from './LookupEntryRow'
+import { FindEntryRow } from './FindEntryRow'
 import { TagInput } from './TagInput'
 import { MoreMenu } from '../shared/MoreMenu'
 import { IconPlus, IconLink } from '../shared/icons'
 
 type Props = {
-  table: LookupTable
+  table: FindTable
   animationDelay?: number
   testKey: string | null
   testTags: string[]
   onUpdate: (id: string, data: { key: string; name: string }) => void
   onDelete: (id: string) => void
   onDuplicate: (id: string) => void
-  onAddEntry: (tableId: string, data: Partial<LookupEntry>) => void
-  onUpdateEntry: (tableId: string, entryId: string, data: Partial<LookupEntry>) => void
+  onAddEntry: (tableId: string, data: Partial<FindEntry>) => void
+  onUpdateEntry: (tableId: string, entryId: string, data: Partial<FindEntry>) => void
   onDeleteEntry: (tableId: string, entryId: string) => void
 }
 
-export const LookupTableCard = ({
+export const FindTableCard = ({
   table,
   animationDelay,
   testKey,
@@ -69,7 +69,7 @@ export const LookupTableCard = ({
   }
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(buildLookupUrl(window.location.origin, table.key)).then(() => {
+    navigator.clipboard.writeText(buildFindUrl(window.location.origin, table.key)).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     })
@@ -77,13 +77,13 @@ export const LookupTableCard = ({
 
   return (
     <div
-      className="shortcut-card-wrap"
+      className="go-card-wrap"
       style={animationDelay ? { animationDelay: `${animationDelay}s` } : undefined}
     >
-      <div className="shortcut-card-label">
+      <div className="go-card-label">
         {nameEdit.editing ? (
           <input
-            className="shortcut-card-label-input"
+            className="go-card-label-input"
             value={nameEdit.editValue}
             onChange={(e) => nameEdit.setEditValue(e.target.value)}
             onBlur={nameEdit.commitEdit}
@@ -96,24 +96,24 @@ export const LookupTableCard = ({
           />
         ) : table.name ? (
           <span
-            className="shortcut-card-label-text editable"
+            className="go-card-label-text editable"
             onClick={nameEdit.startEdit}
             title="Click to edit name"
           >
             {table.name}
           </span>
         ) : (
-          <span className="shortcut-card-label-ghost" onClick={nameEdit.startEdit}>
+          <span className="go-card-label-ghost" onClick={nameEdit.startEdit}>
             add name
           </span>
         )}
       </div>
 
-      <div className={`shortcut-card${isTestMatch ? ' card-global-match' : ''}`}>
-        <div className="shortcut-card-header">
+      <div className={`go-card${isTestMatch ? ' card-global-match' : ''}`}>
+        <div className="go-card-header">
           {keyEdit.editing ? (
             <input
-              className="shortcut-key-badge shortcut-key-input"
+              className="go-key-badge go-key-input"
               value={keyEdit.editValue}
               onChange={(e) => keyEdit.setEditValue(e.target.value)}
               onBlur={keyEdit.commitEdit}
@@ -125,7 +125,7 @@ export const LookupTableCard = ({
             />
           ) : (
             <span
-              className="shortcut-key-badge shortcut-key-badge--editable"
+              className="go-key-badge go-key-badge--editable"
               onClick={keyEdit.startEdit}
               title="Click to edit key"
             >
@@ -153,10 +153,10 @@ export const LookupTableCard = ({
         </div>
 
         {(displayEntries.length > 0 || (isTestMatch && table.entries.length > 0)) && (
-          <div className="lookup-entry-list">
+          <div className="find-entry-list">
             {displayEntries.length > 0 ? (
               displayEntries.map((entry) => (
-                <LookupEntryRow
+                <FindEntryRow
                   key={entry.id}
                   entry={entry}
                   allTags={allTags}
@@ -165,13 +165,13 @@ export const LookupTableCard = ({
                 />
               ))
             ) : (
-              <div className="lookup-no-matches">No entries match these tags.</div>
+              <div className="find-no-matches">No entries match these tags.</div>
             )}
           </div>
         )}
 
         {addingEntry ? (
-          <div className="lookup-add-entry-form">
+          <div className="find-add-entry-form">
             <input
               className="input"
               value={entryForm.description}
@@ -200,7 +200,7 @@ export const LookupTableCard = ({
             </div>
           </div>
         ) : (
-          <button className="lookup-add-entry-btn" onClick={() => setAddingEntry(true)}>
+          <button className="find-add-entry-btn" onClick={() => setAddingEntry(true)}>
             <IconPlus /> Add entry
           </button>
         )}

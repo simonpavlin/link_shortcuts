@@ -1,8 +1,8 @@
 import { useSearchParams } from 'react-router-dom'
-import { AdminView } from './AdminView'
+import { GoAdminView } from './GoAdminView'
 
-export const ShortcutsPage = () => {
+export const GoPage = () => {
   const [searchParams] = useSearchParams()
   const prefillCommand = searchParams.get('key') ?? ''
-  return <AdminView prefillCommand={prefillCommand} prefillParam="" />
+  return <GoAdminView prefillCommand={prefillCommand} prefillParam="" />
 }

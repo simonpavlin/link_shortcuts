@@ -9,7 +9,7 @@ export type PatternTypeInfo = {
   pattern: string | null
 }
 
-export type Rule = {
+export type GoRule = {
   id: string
   label: string
   patternType: PatternTypeName
@@ -19,17 +19,17 @@ export type Rule = {
   lastUsedAt?: string | null
 }
 
-export type Shortcut = {
+export type GoCondition = {
   id: string
   key: string
   name: string
   trimInput?: boolean
   lowercaseInput?: boolean
-  rules: Rule[]
+  rules: GoRule[]
 }
 
-export type RuleResult = {
-  rule: Rule
+export type GoRuleResult = {
+  rule: GoRule
   matched: boolean
   resultUrl: string | null
   skipped?: boolean
@@ -60,7 +60,7 @@ export const interpolateParams = (template: string, params: Record<string, strin
   return result
 }
 
-export const evaluateRules = (rules: Rule[], param: string, params: Record<string, string> = {}): RuleResult[] =>
+export const evaluateRules = (rules: GoRule[], param: string, params: Record<string, string> = {}): GoRuleResult[] =>
   rules.map((rule) => {
     let matched = false
     let resultUrl: string | null = null
@@ -82,14 +82,14 @@ export const evaluateRules = (rules: Rule[], param: string, params: Record<strin
 
 // ── CRUD helpers (pure functions, return new arrays) ─────────────────────────
 
-export const createShortcut = ({ key = '', name = '' } = {}): Shortcut => ({
+export const createCondition = ({ key = '', name = '' } = {}): GoCondition => ({
   id: uuidv4(),
   key,
   name,
   rules: [],
 })
 
-export const createRule = ({ label = '', patternType = 'number' as PatternTypeName, pattern = '', url = '' } = {}): Rule => ({
+export const createRule = ({ label = '', patternType = 'number' as PatternTypeName, pattern = '', url = '' } = {}): GoRule => ({
   id: uuidv4(),
   label,
   patternType,
@@ -99,46 +99,46 @@ export const createRule = ({ label = '', patternType = 'number' as PatternTypeNa
   url,
 })
 
-export const addShortcut = (shortcuts: Shortcut[], data: { key?: string; name?: string }) => {
-  const shortcut = createShortcut(data)
-  return { shortcuts: [...shortcuts, shortcut], newId: shortcut.id }
+export const addCondition = (conditions: GoCondition[], data: { key?: string; name?: string }) => {
+  const condition = createCondition(data)
+  return { conditions: [...conditions, condition], newId: condition.id }
 }
 
-export const updateShortcut = (shortcuts: Shortcut[], id: string, data: Partial<Shortcut>): Shortcut[] =>
-  shortcuts.map((s) => (s.id === id ? { ...s, ...data } : s))
+export const updateCondition = (conditions: GoCondition[], id: string, data: Partial<GoCondition>): GoCondition[] =>
+  conditions.map((s) => (s.id === id ? { ...s, ...data } : s))
 
-export const deleteShortcut = (shortcuts: Shortcut[], id: string): Shortcut[] =>
-  shortcuts.filter((s) => s.id !== id)
+export const deleteCondition = (conditions: GoCondition[], id: string): GoCondition[] =>
+  conditions.filter((s) => s.id !== id)
 
-export const addRule = (shortcuts: Shortcut[], shortcutId: string, ruleData: Partial<Rule>): Shortcut[] =>
-  shortcuts.map((s) =>
-    s.id !== shortcutId ? s : { ...s, rules: [...s.rules, createRule(ruleData)] }
+export const addRule = (conditions: GoCondition[], conditionId: string, ruleData: Partial<GoRule>): GoCondition[] =>
+  conditions.map((s) =>
+    s.id !== conditionId ? s : { ...s, rules: [...s.rules, createRule(ruleData)] }
   )
 
-export const updateRule = (shortcuts: Shortcut[], shortcutId: string, ruleId: string, data: Partial<Rule>): Shortcut[] =>
-  shortcuts.map((s) =>
-    s.id !== shortcutId
+export const updateRule = (conditions: GoCondition[], conditionId: string, ruleId: string, data: Partial<GoRule>): GoCondition[] =>
+  conditions.map((s) =>
+    s.id !== conditionId
       ? s
       : { ...s, rules: s.rules.map((r) => (r.id === ruleId ? { ...r, ...data } : r)) }
   )
 
-export const deleteRule = (shortcuts: Shortcut[], shortcutId: string, ruleId: string): Shortcut[] =>
-  shortcuts.map((s) =>
-    s.id !== shortcutId ? s : { ...s, rules: s.rules.filter((r) => r.id !== ruleId) }
+export const deleteRule = (conditions: GoCondition[], conditionId: string, ruleId: string): GoCondition[] =>
+  conditions.map((s) =>
+    s.id !== conditionId ? s : { ...s, rules: s.rules.filter((r) => r.id !== ruleId) }
   )
 
-export const reorderRules = (shortcuts: Shortcut[], shortcutId: string, newRules: Rule[]): Shortcut[] =>
-  shortcuts.map((s) => (s.id !== shortcutId ? s : { ...s, rules: newRules }))
+export const reorderRules = (conditions: GoCondition[], conditionId: string, newRules: GoRule[]): GoCondition[] =>
+  conditions.map((s) => (s.id !== conditionId ? s : { ...s, rules: newRules }))
 
-export const duplicateShortcut = (shortcuts: Shortcut[], id: string): Shortcut[] => {
-  const src = shortcuts.find((s) => s.id === id)
-  if (!src) return shortcuts
-  const copy: Shortcut = {
-    ...createShortcut({ key: `${src.key}-copy`, name: src.name ? `${src.name} (copy)` : '' }),
+export const duplicateCondition = (conditions: GoCondition[], id: string): GoCondition[] => {
+  const src = conditions.find((s) => s.id === id)
+  if (!src) return conditions
+  const copy: GoCondition = {
+    ...createCondition({ key: `${src.key}-copy`, name: src.name ? `${src.name} (copy)` : '' }),
     rules: src.rules.map((r) => ({ ...r, id: uuidv4() })),
   }
-  const idx = shortcuts.findIndex((s) => s.id === id)
-  const result = [...shortcuts]
+  const idx = conditions.findIndex((s) => s.id === id)
+  const result = [...conditions]
   result.splice(idx + 1, 0, copy)
   return result
 }

@@ -2,7 +2,7 @@ import { useState, Fragment } from 'react'
 import type React from 'react'
 import { IconCheck, IconX, IconReturn, IconChevronDown } from './shared/icons'
 import type { EvalStep, EvalResult } from '../utils/evaluate'
-import type { LookupEntry } from '../utils/lookup.utils'
+import type { FindEntry } from '../utils/find.utils'
 
 // ─── Row builders ─────────────────────────────────────────────────────────────
 
@@ -33,7 +33,7 @@ type FlatItem = { kind: 'flat'; id: string; row: React.ReactNode }
 type BlockItem = { kind: 'block'; id: string; fnLabel: string; fnArg: string; mc: string; resultRows: React.ReactNode[]; summaryType: 'boolean' | 'count'; summaryValue: boolean | number }
 type TraceItem = FlatItem | BlockItem
 
-const entryDesc = (entry: LookupEntry) => entry.description
+const entryDesc = (entry: FindEntry) => entry.description
   ? <>{entry.description} <span className="eval-url-muted">({entry.url})</span></>
   : entry.url
 

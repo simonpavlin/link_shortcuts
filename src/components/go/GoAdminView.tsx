@@ -1,31 +1,31 @@
 import { useState } from 'react'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
 import {
-  addShortcut,
-  updateShortcut,
-  deleteShortcut,
+  addCondition,
+  updateCondition,
+  deleteCondition,
   addRule,
   updateRule,
   deleteRule,
   reorderRules,
-  duplicateShortcut,
-} from '../../utils/shortcuts.utils'
-import { ShortcutCard } from './ShortcutCard'
+  duplicateCondition,
+} from '../../utils/go.utils'
+import { GoCard } from './GoCard'
 import { DataPorter } from '../shared/DataPorter'
 import { GlobalTestInput } from '../shared/GlobalTestInput'
 import { AddCardForm } from '../shared/AddCardForm'
-import type { Shortcut } from '../../utils/shortcuts.utils'
+import type { GoCondition } from '../../utils/go.utils'
 
 const STORAGE_KEY = 'linker_shortcuts'
-const INITIAL: { shortcuts: Shortcut[] } = { shortcuts: [] }
+const INITIAL: { shortcuts: GoCondition[] } = { shortcuts: [] }
 
 type Props = {
   prefillCommand: string
   prefillParam: string
 }
 
-export const AdminView = ({ prefillCommand, prefillParam }: Props) => {
-  const [data, setData] = useLocalStorage<{ shortcuts: Shortcut[] }>(STORAGE_KEY, INITIAL)
+export const GoAdminView = ({ prefillCommand, prefillParam }: Props) => {
+  const [data, setData] = useLocalStorage<{ shortcuts: GoCondition[] }>(STORAGE_KEY, INITIAL)
 
   // Global test field – initialised from URL params if present
   const [globalTestInput, setGlobalTestInput] = useState(() => {
@@ -35,7 +35,7 @@ export const AdminView = ({ prefillCommand, prefillParam }: Props) => {
   const [globalFocused, setGlobalFocused] = useState(!!prefillCommand)
 
   const { shortcuts } = data
-  const mutate = (newShortcuts: Shortcut[]) => setData({ shortcuts: newShortcuts })
+  const mutate = (newConditions: GoCondition[]) => setData({ shortcuts: newConditions })
 
   // Parse global test into command + param (split on first space)
   const spaceIdx = globalTestInput.indexOf(' ')
@@ -46,9 +46,9 @@ export const AdminView = ({ prefillCommand, prefillParam }: Props) => {
     ? null
     : globalTestInput.slice(spaceIdx + 1)
 
-  const handleAddShortcut = (form: { key: string; name: string }) => {
-    const result = addShortcut(shortcuts, form)
-    mutate(result.shortcuts)
+  const handleAddCondition = (form: { key: string; name: string }) => {
+    const result = addCondition(shortcuts, form)
+    mutate(result.conditions)
   }
 
   return (
@@ -77,37 +77,37 @@ export const AdminView = ({ prefillCommand, prefillParam }: Props) => {
         placeholder="Test globally: mr 12345"
       />
 
-      <div className="shortcuts-stack">
+      <div className="go-stack">
         {shortcuts.length === 0 && (
-          <p className="empty-hint">No shortcuts yet — add one below.</p>
+          <p className="empty-hint">No conditions yet — add one below.</p>
         )}
 
         {shortcuts.map((s, i) => (
-          <ShortcutCard
+          <GoCard
             key={s.id}
-            shortcut={s}
+            condition={s}
             animationDelay={i * 0.07}
             globalCommand={globalFocused ? globalCommand : null}
             globalParam={globalFocused ? globalParam : null}
-            onUpdate={(id, formData) => mutate(updateShortcut(shortcuts, id, formData))}
-            onDelete={(id) => mutate(deleteShortcut(shortcuts, id))}
-            onDuplicate={(id) => mutate(duplicateShortcut(shortcuts, id))}
-            onAddRule={(shortcutId, ruleData) => mutate(addRule(shortcuts, shortcutId, ruleData))}
-            onUpdateRule={(shortcutId, ruleId, ruleData) =>
-              mutate(updateRule(shortcuts, shortcutId, ruleId, ruleData))
+            onUpdate={(id, formData) => mutate(updateCondition(shortcuts, id, formData))}
+            onDelete={(id) => mutate(deleteCondition(shortcuts, id))}
+            onDuplicate={(id) => mutate(duplicateCondition(shortcuts, id))}
+            onAddRule={(conditionId, ruleData) => mutate(addRule(shortcuts, conditionId, ruleData))}
+            onUpdateRule={(conditionId, ruleId, ruleData) =>
+              mutate(updateRule(shortcuts, conditionId, ruleId, ruleData))
             }
-            onDeleteRule={(shortcutId, ruleId) =>
-              mutate(deleteRule(shortcuts, shortcutId, ruleId))
+            onDeleteRule={(conditionId, ruleId) =>
+              mutate(deleteRule(shortcuts, conditionId, ruleId))
             }
-            onReorderRules={(shortcutId, newRules) =>
-              mutate(reorderRules(shortcuts, shortcutId, newRules))
+            onReorderRules={(conditionId, newRules) =>
+              mutate(reorderRules(shortcuts, conditionId, newRules))
             }
           />
         ))}
 
         <AddCardForm
-          onAdd={handleAddShortcut}
-          addLabel="Add shortcut"
+          onAdd={handleAddCondition}
+          addLabel="Add condition"
         />
       </div>
 
@@ -115,8 +115,8 @@ export const AdminView = ({ prefillCommand, prefillParam }: Props) => {
         <DataPorter
           data={shortcuts}
           dataKey="shortcuts"
-          filename="linker-shortcuts.json"
-          onImport={(newShortcuts) => mutate(newShortcuts as Shortcut[])}
+          filename="linker-go.json"
+          onImport={(newConditions) => mutate(newConditions as GoCondition[])}
         />
       </div>
     </div>

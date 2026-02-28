@@ -2,21 +2,21 @@ import { useState, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { evaluateQuery } from '../utils/evaluate'
 import { EvalTrace } from './EvalTrace'
-import { LookupPickerView } from './lookup/LookupPickerView'
-import type { Shortcut } from '../utils/shortcuts.utils'
-import type { LookupTable } from '../utils/lookup.utils'
+import { FindPickerView } from './find/FindPickerView'
+import type { GoCondition } from '../utils/go.utils'
+import type { FindTable } from '../utils/find.utils'
 
 const SHORTCUTS_KEY = 'linker_shortcuts'
 const LOOKUP_KEY = 'linker_lookup'
 
-const readShortcuts = (): Shortcut[] => {
+const readConditions = (): GoCondition[] => {
   try {
     const parsed = JSON.parse(localStorage.getItem(SHORTCUTS_KEY) ?? 'null')
     return Array.isArray(parsed?.shortcuts) ? parsed.shortcuts : []
   } catch { return [] }
 }
 
-const readTables = (): LookupTable[] => {
+const readTables = (): FindTable[] => {
   try {
     const parsed = JSON.parse(localStorage.getItem(LOOKUP_KEY) ?? 'null')
     return Array.isArray(parsed?.tables) ? parsed.tables : []
@@ -32,7 +32,7 @@ export const HomePage = ({ initialQ = '' }: Props) => {
   const navigate = useNavigate()
 
   const { steps, result } = useMemo(() => {
-    return evaluateQuery(input, readShortcuts(), readTables(), window.location.origin)
+    return evaluateQuery(input, readConditions(), readTables(), window.location.origin)
   }, [input])
 
   const canExecute = result.type === 'redirect' || result.type === 'navigate'
@@ -76,7 +76,7 @@ export const HomePage = ({ initialQ = '' }: Props) => {
 
       {result.type === 'picker' && (
         <div className="home-picker">
-          <LookupPickerView
+          <FindPickerView
             table={result.table}
             entries={result.entries}
             tags={result.tags ?? []}
