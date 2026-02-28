@@ -51,9 +51,10 @@ export const PATTERN_TYPES: Record<PatternTypeName, PatternTypeInfo> = {
 export const interpolateParams = (template: string, params: Record<string, string>): string => {
   let result = template
   for (let i = 0; i < 10; i++) {
-    const next = result.replace(/\$\{(\w+)\}/g, (match, name: string) =>
-      name in params ? params[name] : match,
-    )
+    const next = result.replace(/\$(?:\{(\w+)\}|(\d+))/g, (match, name?: string, pos?: string) => {
+      const key = name ?? pos!
+      return key in params ? params[key] : match
+    })
     if (next === result) break
     result = next
   }
@@ -69,9 +70,18 @@ export const evaluateRules = (rules: GoRule[], param: string, params: Record<str
         matched = param === rule.pattern
       } else {
         const regex = new RegExp(rule.pattern)
-        matched = regex.test(param)
+        const match = regex.exec(param)
+        matched = match !== null
+        if (match) {
+          const mergedParams = { ...params }
+          for (let i = 1; i < match.length; i++) {
+            if (match[i] !== undefined) mergedParams[String(i)] = match[i]
+          }
+          if (match.groups) Object.assign(mergedParams, match.groups)
+          resultUrl = interpolateParams(rule.url, mergedParams).replace('%s', encodeURIComponent(param))
+        }
       }
-      if (matched) {
+      if (matched && resultUrl === null) {
         resultUrl = interpolateParams(rule.url, params).replace('%s', encodeURIComponent(param))
       }
     } catch {
