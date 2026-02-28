@@ -12,7 +12,12 @@
       "Bash(cd /mnt/c/Users/simip/Workspaces/projects/link_shortcuts && npx tsc --noEmit 2>&1 | head -80)",
       "Bash(cd /mnt/c/Users/simip/Workspaces/projects/link_shortcuts && npx tsc --noEmit 2>&1 | grep -E \"shortcuts/\\(ShortcutCard|RuleRow|RuleList|AdminView|ShortcutsPage\\)\" || echo \"No errors in shortcuts components\")",
       "Bash(cd /mnt/c/Users/simip/Workspaces/projects/link_shortcuts && npx tsc --noEmit 2>&1)",
-      "Bash(cd /mnt/c/Users/simip/Workspaces/projects/link_shortcuts && npx vite build 2>&1 | tail -20)"
+      "Bash(cd /mnt/c/Users/simip/Workspaces/projects/link_shortcuts && npx vite build 2>&1 | tail -20)",
+      "Bash(npm install -D eslint @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint-plugin-react 2>&1)",
+      "Bash(npx eslint --version 2>&1)",
+      "Bash(npm ls eslint @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint-plugin-react 2>&1 | head -10)",
+      "Bash(npx eslint src/ 2>&1 | head -40)",
+      "Bash(npx eslint src/ 2>&1)"
     ]
   }
 }
